@@ -1,0 +1,159 @@
+/* -------------------------------------------------- */
+/* BLOQUE 1: reseteo básico                            */
+/* -------------------------------------------------- */
+
+/*
+  Quitamos márgenes y paddings por defecto
+  para empezar desde una base limpia.
+*/
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* -------------------------------------------------- */
+/* BLOQUE 2: estilos generales del body                */
+/* -------------------------------------------------- */
+
+/*
+  El body tendrá fondo negro
+  y una altura mínima igual a toda la pantalla.
+*/
+body {
+  min-height: 100vh;
+  background-color: #000000;
+}
+
+/* -------------------------------------------------- */
+/* BLOQUE 3: escena principal                          */
+/* -------------------------------------------------- */
+
+/*
+  Este contenedor ocupa todo el ancho y toda la altura
+  de la ventana del navegador.
+
+  "position: relative" es importante porque las líneas,
+  que van a ser absolutas, se colocarán tomando este
+  contenedor como referencia.
+*/
+.escena {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* -------------------------------------------------- */
+/* BLOQUE 4: estilo común de todas las líneas          */
+/* -------------------------------------------------- */
+
+/*
+  Todas las líneas comparten:
+  - posición absoluta
+  - una anchura muy fina
+  - altura completa
+  - un color gris muy sutil
+*/
+.linea {
+  position: absolute;
+  top: 0;
+  width: 1px;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+/* -------------------------------------------------- */
+/* BLOQUE 5: posición individual de cada línea         */
+/* -------------------------------------------------- */
+
+/*
+  Colocamos las líneas en posiciones parecidas:
+  - primera línea en el 16.66%
+  - segunda línea en el 50%
+  - tercera línea en el 83.33%
+
+  Así dividimos la pantalla en:
+  margen pequeño + zona central + zona central + margen pequeño
+*/
+.linea-1 {
+  left: 16.66%;
+}
+
+.linea-2 {
+  left: 50%;
+}
+
+.linea-3 {
+  left: 83.33%;
+}
+
+/* -------------------------------------------------- */
+/* BLOQUE 6: contenedor del vídeo                      */
+/* -------------------------------------------------- */
+
+/*
+  Este bloque representa el pequeño rectángulo vertical
+  donde se verá el vídeo.
+
+  Lo colocamos sobre la línea central para que la línea
+  pase visualmente por detrás, como en la referencia.
+*/
+.bloque-video {
+  position: absolute;
+
+  /*
+    left: 50% y top: 50% colocan el punto de referencia
+    del elemento justo en el centro del viewport.
+  */
+  top: 50%;
+  left: 50%;
+
+  /*
+    translate(-50%, -50%) corrige el ancho y el alto
+    del propio elemento para que su centro real coincida
+    exactamente con el centro de la pantalla.
+  */
+  transform: translate(-50%, -50%);
+
+  /*
+    Tamaño del rectángulo.
+    Es vertical, no cuadrado, porque la referencia
+    muestra una pieza más estrecha y alta.
+  */
+  width: 116px;
+  height: 140px;
+
+  /*
+    z-index mayor que el de las líneas para que el vídeo
+    quede por delante.
+  */
+  z-index: 2;
+
+  /*
+    overflow: hidden recorta el vídeo si sobresale.
+  */
+  overflow: hidden;
+
+  /* Fondo de seguridad mientras carga el vídeo */
+  background-color: #111111;
+}
+
+/* -------------------------------------------------- */
+/* BLOQUE 7: vídeo dentro del contenedor               */
+/* -------------------------------------------------- */
+
+/*
+  El vídeo llena completamente el rectángulo.
+*/
+.video-central {
+  width: 100%;
+  height: 100%;
+  display: block;
+
+  /*
+    cover hace que el vídeo ocupe todo el espacio
+    aunque recorte un poco los bordes.
+  */
+  object-fit: cover;
+}
