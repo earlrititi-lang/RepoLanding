@@ -1,0 +1,9 @@
+{
+  "name": "landing-contenidos-auth-local",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Login y registro con persistencia en JSON local",
+  "scripts": {
+    "start": "node server.js"
+  }
+}

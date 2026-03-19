@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login y registro</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="card">
+    <div id="form-view">
+      <h1 id="title">Registro</h1>
+
+      <form id="form">
+        <input id="name" type="text" placeholder="Nombre">
+        <input id="email" type="email" placeholder="Email" required>
+        <input id="password" type="password" placeholder="Contrasena" required minlength="6">
+        <button id="submit" type="submit">Guardar usuario</button>
+      </form>
+
+      <p id="message"></p>
+      <button id="toggle" type="button">Ir a login</button>
+    </div>
+
+    <div id="success-view" class="hidden">
+      <h1>Inicio de sesion correcto</h1>
+      <p>Datos guardados en <code>db.json</code>.</p>
+    </div>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
