@@ -1,33 +1,100 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login y registro</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <main class="card">
-    <div id="form-view">
-      <h1 id="title">Registro</h1>
+  <head>
+    <!--
+      UTF-8 evita problemas con caracteres especiales del espanol.
+    -->
+    <meta charset="UTF-8" />
 
-      <form id="form">
-        <input id="name" type="text" placeholder="Nombre">
-        <input id="email" type="email" placeholder="Email" required>
-        <input id="password" type="password" placeholder="Contrasena" required minlength="6">
-        <button id="submit" type="submit">Guardar usuario</button>
-      </form>
+    <!--
+      Esta meta ayuda a que la interfaz se vea correctamente en movil.
+    -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-      <p id="message"></p>
-      <button id="toggle" type="button">Ir a login</button>
-    </div>
+    <!--
+      Titulo de la pestana del navegador.
+    -->
+    <title>Login y registro</title>
 
-    <div id="success-view" class="hidden">
-      <h1>Inicio de sesion correcto</h1>
-      <p>Datos guardados en <code>db.json</code>.</p>
-    </div>
-  </main>
+    <!--
+      Hoja de estilos de esta mini aplicacion.
+    -->
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <!--
+      La tarjeta principal contiene tanto el formulario como la vista
+      de exito. JavaScript alterna entre ambas.
+    -->
+    <main class="card">
+      <!--
+        Vista principal del formulario.
+        Aqui se muestran registro y login usando el mismo marcado.
+      -->
+      <div id="form-view">
+        <!--
+          El titulo cambia dinamicamente entre "Registro" y "Login".
+        -->
+        <h1 id="title">Registro</h1>
 
-  <script src="script.js"></script>
-</body>
+        <!--
+          Un solo formulario sirve para dos modos:
+          - registro
+          - login
+
+          JavaScript adapta etiquetas, campos visibles y texto del boton.
+        -->
+        <form id="form">
+          <!--
+            El campo nombre solo se usa durante el registro.
+            En login se oculta desde JavaScript.
+          -->
+          <input id="name" type="text" placeholder="Nombre" />
+
+          <!--
+            Email y contrasena se usan en ambos modos.
+          -->
+          <input id="email" type="email" placeholder="Email" required />
+          <input
+            id="password"
+            type="password"
+            placeholder="Contrasena"
+            required
+            minlength="6"
+          />
+
+          <!--
+            El texto de este boton cambia segun el modo actual.
+          -->
+          <button id="submit" type="submit">Guardar usuario</button>
+        </form>
+
+        <!--
+          Zona donde se muestran mensajes de exito o error devueltos
+          por el servidor.
+        -->
+        <p id="message"></p>
+
+        <!--
+          Boton que alterna entre registro y login.
+        -->
+        <button id="toggle" type="button">Ir a login</button>
+      </div>
+
+      <!--
+        Vista que solo aparece tras un login correcto.
+        Empieza oculta gracias a la clase "hidden".
+      -->
+      <div id="success-view" class="hidden">
+        <h1>Inicio de sesion correcto</h1>
+        <p>Datos guardados en <code>db.json</code>.</p>
+      </div>
+    </main>
+
+    <!--
+      Cargamos el JavaScript al final para que todos los nodos del HTML
+      existan cuando el script los busque.
+    -->
+    <script src="script.js"></script>
+  </body>
 </html>

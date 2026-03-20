@@ -1,50 +1,81 @@
 <!DOCTYPE html>
 <html lang="es">
   <head>
-   
+    <!--
+      UTF-8 permite usar caracteres del espanol y otros simbolos sin problemas.
+    -->
     <meta charset="UTF-8" />
+
+    <!--
+      Esta meta hace que la maqueta se adapte correctamente al ancho real
+      del dispositivo, especialmente en movil.
+    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      Titulo de la pestana del navegador.
+    -->
     <title>Estructura base</title>
+
+    <!--
+      Enlazamos la hoja de estilos principal de esta pantalla.
+    -->
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <!--
-      BLOQUE 2: contenedor principal
-
-      Este contenedor ocupa toda la pantalla.
-      Dentro colocaremos las líneas verticales.
+      "escena" es el lienzo principal de la composicion.
+      Aqui metemos tanto las lineas decorativas como el bloque del video.
     -->
     <main class="escena">
-     
+      <!--
+        Estas tres lineas verticales no tienen contenido.
+        Solo sirven para construir la reticula visual del fondo.
+      -->
       <div class="linea linea-1"></div>
       <div class="linea linea-2"></div>
       <div class="linea linea-3"></div>
 
       <!--
-        BLOQUE 4: bloque del vídeo
-
-        Este contenedor será el rectángulo pequeño
-        que aparece en la zona central.
-
-        Dentro colocamos la etiqueta <video>.
+        Este section envuelve al video.
+        No usamos el <video> suelto porque nos interesa controlar:
+        - su tamano inicial
+        - el recorte
+        - la transicion hacia pantalla completa visual
       -->
       <section class="bloque-video">
         <!--
-          autoplay: inicia el vídeo automáticamente
-          muted: necesario para que autoplay funcione en muchos navegadores
-          loop: cuando termina, vuelve a empezar
-          playsinline: en móvil evita la pantalla completa automática
+          autoplay:
+          intenta reproducir el video automaticamente al cargar la pagina.
 
-          Cuando metas tu archivo, puedes llamarlo "video.mp4"
-          o cambiar la ruta src por el nombre real.
+          muted:
+          es clave para que autoplay funcione en la mayoria de navegadores.
+
+          loop:
+          al terminar, el video vuelve a empezar.
+
+          playsinline:
+          evita que en algunos moviles el navegador fuerce fullscreen nativo.
         -->
         <video class="video-central" autoplay muted loop playsinline>
+          <!--
+            Fuente del archivo de video.
+            Si mas adelante cambias el archivo, basta con actualizar esta ruta.
+          -->
           <source src="./assets/video-1080p.mp4" type="video/mp4" />
-          Tu navegador no soporta la etiqueta de vídeo.
+
+          <!--
+            Texto de respaldo para navegadores que no soporten la etiqueta <video>.
+          -->
+          Tu navegador no soporta la etiqueta de video.
         </video>
       </section>
     </main>
 
+    <!--
+      El JavaScript se carga al final para que el HTML ya exista
+      cuando el script intente buscar elementos en la pagina.
+    -->
     <script src="./script.js"></script>
   </body>
 </html>

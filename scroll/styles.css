@@ -1,10 +1,11 @@
 /* -------------------------------------------------- */
-/* BLOQUE 1: reseteo básico                            */
+/* BLOQUE 1: reset global                             */
 /* -------------------------------------------------- */
 
 /*
-  Quitamos márgenes y paddings por defecto
-  para empezar desde una base limpia.
+  El selector universal "*" aplica estas reglas a todos los elementos.
+  Aqui limpiamos margenes y paddings por defecto y unificamos el modelo
+  de caja para que ancho y alto sean mas predecibles.
 */
 * {
   box-sizing: border-box;
@@ -13,12 +14,13 @@
 }
 
 /* -------------------------------------------------- */
-/* BLOQUE 2: estilos generales del body                */
+/* BLOQUE 2: estilos base del documento               */
 /* -------------------------------------------------- */
 
 /*
-  El body tendrá fondo negro
-  y una altura mínima igual a toda la pantalla.
+  El body actua como fondo general de la pagina.
+  Le damos altura minima de pantalla completa y fondo negro para que
+  todo el montaje visual parta de una base oscura.
 */
 body {
   min-height: 100vh;
@@ -26,16 +28,24 @@ body {
 }
 
 /* -------------------------------------------------- */
-/* BLOQUE 3: escena principal                          */
+/* BLOQUE 3: contenedor principal                     */
 /* -------------------------------------------------- */
 
 /*
-  Este contenedor ocupa todo el ancho y toda la altura
-  de la ventana del navegador.
+  ".escena" es el gran contenedor visual de la pagina.
 
-  "position: relative" es importante porque las líneas,
-  que van a ser absolutas, se colocarán tomando este
-  contenedor como referencia.
+  position: relative:
+  sirve de referencia para los elementos posicionados dentro.
+
+  width: 100%:
+  hace que ocupe todo el ancho disponible.
+
+  min-height: 100vh:
+  garantiza al menos la altura de la ventana.
+
+  overflow: hidden:
+  oculta cualquier parte que sobresalga y evita barras de scroll
+  durante la animacion.
 */
 .escena {
   position: relative;
@@ -45,15 +55,23 @@ body {
 }
 
 /* -------------------------------------------------- */
-/* BLOQUE 4: estilo común de todas las líneas          */
+/* BLOQUE 4: lineas de fondo                          */
 /* -------------------------------------------------- */
 
 /*
-  Todas las líneas comparten:
-  - posición absoluta
-  - una anchura muy fina
-  - altura completa
-  - un color gris muy sutil
+  Esta clase define el estilo comun de las tres lineas.
+
+  position: absolute:
+  nos permite colocarlas con precision sobre la escena.
+
+  top: 0 + height: 100%:
+  hacen que cada linea arranque arriba y llegue hasta abajo.
+
+  width: 1px:
+  crea una linea muy fina.
+
+  background-color con alpha:
+  deja una guia visual suave, sin competir con el video.
 */
 .linea {
   position: absolute;
@@ -63,18 +81,9 @@ body {
   background-color: rgba(255, 255, 255, 0.18);
 }
 
-/* -------------------------------------------------- */
-/* BLOQUE 5: posición individual de cada línea         */
-/* -------------------------------------------------- */
-
 /*
-  Colocamos las líneas en posiciones parecidas:
-  - primera línea en el 16.66%
-  - segunda línea en el 50%
-  - tercera línea en el 83.33%
-
-  Así dividimos la pantalla en:
-  margen pequeño + zona central + zona central + margen pequeño
+  Cada modificador coloca una linea en un punto distinto del ancho.
+  Asi se genera una reticula visual repartida por la pantalla.
 */
 .linea-1 {
   left: 16.66%;
@@ -89,71 +98,107 @@ body {
 }
 
 /* -------------------------------------------------- */
-/* BLOQUE 6: contenedor del vídeo                      */
+/* BLOQUE 5: marco del video                          */
 /* -------------------------------------------------- */
 
 /*
-  Este bloque representa el pequeño rectángulo vertical
-  donde se verá el vídeo.
+  ".bloque-video" es la caja visible que contiene el video.
+  La animacion de crecimiento se hace sobre esta caja, no sobre el
+  elemento <video> directamente.
 
-  Lo colocamos sobre la línea central para que la línea
-  pase visualmente por detrás, como en la referencia.
+  position: fixed:
+  ancla el bloque al viewport. Esto es importante para que, al crecer,
+  pueda cubrir toda la ventana y no solo el alto del contenedor padre.
+
+  top: 50% y left: 50%:
+  colocan su punto de origen en el centro de la pantalla.
+
+  transform: translate(-50%, -50%):
+  corrige el desplazamiento para centrar el bloque de verdad.
+
+  width y height:
+  definen el tamano inicial del rectangulo.
+
+  border-radius:
+  redondea las esquinas mientras el video esta en formato pequeno.
+
+  z-index:
+  coloca el video por encima de las lineas.
+
+  overflow: hidden:
+  recorta el contenido interior a la forma del contenedor.
+
+  background-color:
+  muestra un color de respaldo mientras el video carga.
+
+  transition:
+  anima con suavidad el paso del tamano pequeno al tamano completo.
+
+  will-change:
+  avisa al navegador de que estas propiedades van a cambiar,
+  lo que puede ayudar a que la animacion vaya mas fluida.
 */
 .bloque-video {
-  position: absolute;
-
-  /*
-    left: 50% y top: 50% colocan el punto de referencia
-    del elemento justo en el centro del viewport.
-  */
+  position: fixed;
   top: 50%;
   left: 50%;
-
-  /*
-    translate(-50%, -50%) corrige el ancho y el alto
-    del propio elemento para que su centro real coincida
-    exactamente con el centro de la pantalla.
-  */
   transform: translate(-50%, -50%);
-
-  /*
-    Tamaño del rectángulo.
-    Es vertical, no cuadrado, porque la referencia
-    muestra una pieza más estrecha y alta.
-  */
   width: 116px;
   height: 140px;
-
-  /*
-    z-index mayor que el de las líneas para que el vídeo
-    quede por delante.
-  */
+  border-radius: 18px;
   z-index: 2;
-
-  /*
-    overflow: hidden recorta el vídeo si sobresale.
-  */
   overflow: hidden;
-
-  /* Fondo de seguridad mientras carga el vídeo */
   background-color: #111111;
+  transition:
+    width 1.8s ease,
+    height 1.8s ease,
+    border-radius 1.8s ease,
+    box-shadow 1.8s ease;
+  will-change: width, height, border-radius;
+}
+
+/*
+  Esta clase solo se activa desde JavaScript.
+  Cuando aparece, el bloque pasa de tamano pequeno a ocupar visualmente
+  toda la ventana.
+
+  width: 100vw y height: 100vh:
+  hacen que el contenedor cubra el viewport entero.
+
+  border-radius: 0:
+  elimina las esquinas redondeadas para que el resultado parezca pantalla completa.
+
+  box-shadow:
+  anade profundidad durante la transicion.
+
+  z-index: 10:
+  asegura que, ya expandido, siga por delante del resto.
+*/
+.bloque-video.expandido {
+  width: 100vw;
+  height: 100vh;
+  border-radius: 0;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.35);
+  z-index: 10;
 }
 
 /* -------------------------------------------------- */
-/* BLOQUE 7: vídeo dentro del contenedor               */
+/* BLOQUE 6: video interior                           */
 /* -------------------------------------------------- */
 
 /*
-  El vídeo llena completamente el rectángulo.
+  El video llena por completo el contenedor padre.
+
+  display: block:
+  evita el pequeno espacio inferior que suelen dejar algunos elementos inline.
+
+  object-fit: cover:
+  hace que el video cubra toda la caja aunque tenga que recortar bordes.
+  Es la mejor opcion cuando prima el impacto visual.
 */
 .video-central {
   width: 100%;
   height: 100%;
   display: block;
-
-  /*
-    cover hace que el vídeo ocupe todo el espacio
-    aunque recorte un poco los bordes.
-  */
   object-fit: cover;
 }

@@ -1,7 +1,19 @@
+/*
+  El selector universal aplica box-sizing: border-box a todo.
+  Asi padding y borde se incluyen dentro del ancho y alto final,
+  lo que simplifica mucho el calculo del layout.
+*/
 * {
   box-sizing: border-box;
 }
 
+/*
+  El body ocupa al menos toda la ventana y centra el contenido.
+
+  display: grid + place-items: center:
+  es una forma muy directa de centrar la tarjeta tanto en horizontal
+  como en vertical.
+*/
 body {
   margin: 0;
   min-height: 100vh;
@@ -11,6 +23,14 @@ body {
   background: #f4f4f4;
 }
 
+/*
+  ".card" es la caja principal de la interfaz.
+
+  width: min(90%, 360px):
+  significa "usa el valor mas pequeno entre 90% del ancho disponible
+  y 360px". Asi la tarjeta se adapta bien en movil y no crece demasiado
+  en escritorio.
+*/
 .card {
   width: min(90%, 360px);
   padding: 24px;
@@ -20,26 +40,45 @@ body {
   text-align: center;
 }
 
+/*
+  El formulario se organiza en una sola columna con separacion uniforme
+  entre campos.
+*/
 form {
   display: grid;
   gap: 12px;
 }
 
+/*
+  Inputs y botones comparten espaciado interno y tipografia
+  para que toda la interfaz se vea consistente.
+*/
 input,
 button {
   padding: 12px;
   font: inherit;
 }
 
+/*
+  cursor: pointer comunica visualmente que el boton es interactivo.
+*/
 button {
   cursor: pointer;
 }
 
+/*
+  Reservamos altura minima para los mensajes.
+  Asi la tarjeta no "salta" de tamano cuando aparece texto.
+*/
 #message {
   min-height: 24px;
   color: #444;
 }
 
+/*
+  Esta utilidad oculta elementos por completo.
+  Se usa para esconder la vista de exito hasta que el login sea valido.
+*/
 .hidden {
   display: none;
 }
