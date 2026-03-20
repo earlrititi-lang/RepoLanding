@@ -1,10 +1,19 @@
 /*
-  Reset basico.
+  ------------------------------------------------------------
+  BLOQUE 1. RESET GLOBAL
+  ------------------------------------------------------------
 
-  Quitamos margenes y paddings por defecto del navegador
-  para empezar desde una base totalmente controlada.
-  Tambien activamos border-box para que ancho y alto
-  incluyan padding y borde de forma mas intuitiva.
+  Antes de construir el efecto visual, quitamos el comportamiento
+  por defecto que suele traer el navegador.
+
+  margin: 0 y padding: 0:
+  eliminan separaciones inesperadas.
+
+  box-sizing: border-box:
+  hace que el ancho y el alto incluyan padding y borde.
+  Esto facilita mucho el calculo mental del tamano de los elementos.
+
+  En proyectos pequenos como este, un reset sencillo suele ser suficiente.
 */
 * {
   box-sizing: border-box;
@@ -13,11 +22,18 @@
 }
 
 /*
-  Fondo general de la composicion.
+  ------------------------------------------------------------
+  BLOQUE 2. BODY
+  ------------------------------------------------------------
 
-  No hace falta mas contenido visual en el body:
-  solo queremos un fondo negro limpio sobre el que destaquen
-  las lineas blancas y el bloque del video.
+  El body es el fondo general de toda la composicion.
+
+  No necesitamos una interfaz compleja, asi que le damos un fondo negro limpio
+  que sirva de base para el efecto.
+
+  min-height: 100vh:
+  garantiza que, incluso antes de que el contenido crezca,
+  la pagina ocupe al menos toda la altura visible de la ventana.
 */
 body {
   min-height: 100vh;
@@ -25,11 +41,23 @@ body {
 }
 
 /*
-  La escena mide bastante mas que la ventana.
+  ------------------------------------------------------------
+  BLOQUE 3. ESCENA GENERAL
+  ------------------------------------------------------------
 
-  Esto no es para mostrar mas elementos, sino para crear
-  suficiente recorrido de scroll. Ese recorrido sera convertido
-  por ScrollTrigger en progreso de animacion.
+  ".escena" es el contenedor superior del efecto.
+
+  Lo mas importante aqui no es su aspecto, sino su altura:
+  min-height: 220vh.
+
+  ¿Por que 220vh y no 100vh?
+  Porque necesitamos mas recorrido de scroll del que ofrece una sola pantalla.
+
+  Ese recorrido adicional permite que ScrollTrigger convierta la distancia
+  recorrida por el usuario en progreso de animacion.
+
+  Si la escena midiera solo 100vh, el video apenas tendria tiempo
+  de expandirse de forma gradual.
 */
 .escena {
   position: relative;
@@ -37,14 +65,25 @@ body {
 }
 
 /*
-  Esta es la zona que se fija durante el efecto.
+  ------------------------------------------------------------
+  BLOQUE 4. ZONA PINEADA
+  ------------------------------------------------------------
+
+  ".escena__pin" es la parte visible que se queda fija durante el efecto.
+
+  width: 100%:
+  ocupa todo el ancho de la ventana.
 
   height: 100vh:
-  hace que tenga exactamente el tamano de la ventana.
+  ocupa exactamente una pantalla de alto.
 
   overflow: hidden:
-  evita que se vea cualquier parte del video que sobresalga
-  durante la expansion.
+  recorta cualquier parte del video que sobresalga de este marco
+  mientras aun esta en proceso de expansion.
+
+  background-color: #000000:
+  asegura que el fondo de la zona pineada sea completamente negro,
+  incluso aunque el body u otro contenedor cambien en el futuro.
 */
 .escena__pin {
   position: relative;
@@ -55,10 +94,18 @@ body {
 }
 
 /*
-  Estilo comun de las lineas verticales del fondo.
+  ------------------------------------------------------------
+  BLOQUE 5. LINEAS DE FONDO
+  ------------------------------------------------------------
 
-  Son finas, ocupan toda la altura visible y tienen una opacidad baja
-  para que no compitan con el video, solo estructuren el espacio.
+  Todas las lineas comparten este estilo base:
+  - posicion absoluta para colocarlas con precision
+  - anchura muy fina
+  - altura completa del contenedor visible
+  - blanco con opacidad baja
+
+  Son una ayuda compositiva, no un elemento funcional.
+  Sirven para que el espacio vacio tenga estructura y no se sienta plano.
 */
 .linea {
   position: absolute;
@@ -69,8 +116,14 @@ body {
 }
 
 /*
-  Cada modificador coloca una linea en un punto distinto del ancho.
-  Asi obtenemos una reticula muy simple: izquierda, centro y derecha.
+  Estas tres clases colocan las lineas en distintas posiciones horizontales.
+
+  Hemos elegido tres puntos sencillos:
+  - una linea hacia la izquierda
+  - una en el centro
+  - una hacia la derecha
+
+  Asi el video pequeno parece "colgado" dentro de una reticula minimalista.
 */
 .linea-1 {
   left: 16.66%;
@@ -85,21 +138,39 @@ body {
 }
 
 /*
-  Estado inicial del bloque que contiene el video.
+  ------------------------------------------------------------
+  BLOQUE 6. BLOQUE DEL VIDEO
+  ------------------------------------------------------------
 
-  Empieza pequeno y centrado en pantalla.
-  Durante el scroll, GSAP animara este mismo bloque hasta convertirlo
-  en un rectangulo a pantalla completa.
+  ".bloque-video" es el marco visible del video.
+
+  Es importante entender que el elemento que animamos no es el <video>,
+  sino este contenedor. Eso nos da mucho mas control visual.
+
+  top: 50% y left: 50%:
+  situan el punto de referencia en el centro del contenedor padre.
+
+  transform: translate(-50%, -50%):
+  desplaza el propio elemento hacia arriba e izquierda la mitad
+  de su tamano, de forma que su centro real coincida con el centro
+  de la pantalla.
+
+  width y height:
+  definen el tamano inicial pequeno.
+
+  overflow: hidden:
+  obliga al video a quedarse recortado dentro de este marco.
 
   border-radius:
-  al inicio le da un aspecto de "pieza" o "ventana" flotante.
+  hace que al principio el video no parezca un fondo completo,
+  sino una pieza pequena con presencia propia.
 
   box-shadow:
-  ayuda a separarlo del fondo negro mientras aun es pequeno.
+  crea separacion visual respecto al fondo negro.
 
   will-change:
-  avisa al navegador de que estas propiedades van a cambiar,
-  lo que puede mejorar la fluidez de la animacion.
+  informa al navegador de que varias propiedades cambiaran durante
+  la animacion, lo que puede ayudar a preparar mejor el render.
 */
 .bloque-video {
   position: absolute;
@@ -119,11 +190,19 @@ body {
 }
 
 /*
-  El video rellena completamente el bloque.
+  ------------------------------------------------------------
+  BLOQUE 7. VIDEO INTERIOR
+  ------------------------------------------------------------
+
+  La etiqueta <video> rellena completamente el bloque.
+
+  display: block:
+  evita pequenos espacios de comportamiento inline.
 
   object-fit: cover:
-  hace que el contenido ocupe todo el contenedor aunque recorte
-  un poco los bordes. Es lo normal en un video de fondo.
+  hace que el video ocupe todo el contenedor aunque tenga que recortar
+  ligeramente bordes. Para videos de fondo, esta suele ser la opcion
+  mas adecuada porque prioriza llenar el espacio sin deformar la imagen.
 */
 .video-central {
   display: block;

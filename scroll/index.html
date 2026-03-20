@@ -2,70 +2,171 @@
 <html lang="es">
   <head>
     <!--
-      Configuracion basica del documento.
+      ------------------------------------------------------------
+      BLOQUE 1. CONFIGURACION BASICA DEL DOCUMENTO
+      ------------------------------------------------------------
 
-      UTF-8 evita problemas con caracteres especiales.
-      La meta viewport hace que el layout use el ancho real del dispositivo,
-      algo importante para que el video se expanda bien tanto en movil
-      como en escritorio.
+      Este archivo HTML tiene una mision muy concreta:
+      montar la estructura minima necesaria para crear un efecto visual
+      donde un video pequeno, situado en el centro de una pantalla negra
+      con lineas blancas, se expande progresivamente hasta ocupar
+      todo el viewport.
+
+      No hay texto, botones ni contenido adicional porque la intencion
+      visual es que toda la atencion recaiga en el gesto del scroll
+      y en el crecimiento del video.
+
+      meta charset="UTF-8":
+      permite que el navegador interprete correctamente caracteres
+      especiales y simbolos.
+
+      meta viewport:
+      indica al navegador movil que use el ancho real del dispositivo.
+      Sin esta etiqueta, el tamano del viewport podria no coincidir
+      con el espacio fisico disponible y la expansion del video
+      no se sentiria correcta.
     -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!--
+      Titulo de la pestana del navegador.
+      No afecta al efecto visual, pero forma parte de la configuracion
+      minima correcta de cualquier documento HTML.
+    -->
     <title>Estructura base</title>
 
     <!--
-      Hoja de estilos de esta escena.
-      Aqui definimos el fondo negro, las lineas blancas y el estado inicial
-      del bloque de video antes de que GSAP lo anime.
+      Hoja de estilos principal.
+
+      En este CSS definimos:
+      - el fondo negro
+      - la altura especial de la escena para generar scroll
+      - la posicion de las lineas blancas
+      - el tamano inicial del bloque de video
+
+      El CSS prepara la escena; luego JavaScript y GSAP se encargan
+      de animarla.
     -->
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <!--
-      "escena" es el contenedor completo del efecto.
+      ------------------------------------------------------------
+      BLOQUE 2. CONTENEDOR GENERAL DEL EFECTO
+      ------------------------------------------------------------
 
-      Tiene mas altura que la ventana para que exista recorrido de scroll.
-      Ese recorrido no se usa para mostrar contenido nuevo, sino para
-      alimentar el progreso de la animacion del video.
+      "escena" es el contenedor superior del montaje.
 
-      Es decir:
-      el usuario hace scroll, pero visualmente la pantalla queda fijada
-      mientras el video crece poco a poco.
+      Su papel no es simplemente envolver elementos:
+      tambien crea un recorrido de scroll artificialmente largo.
+
+      ¿Por que necesitamos eso?
+      Porque el crecimiento del video ya no sucede por tiempo
+      como en la version anterior de los 3 segundos, sino por scroll.
+
+      Eso significa que necesitamos "distancia de scroll" para convertirla
+      en "progreso de animacion".
+
+      En otras palabras:
+      - el usuario desplaza la rueda o arrastra con el dedo
+      - ScrollTrigger mide cuanto ha avanzado ese scroll
+      - GSAP usa ese avance para agrandar el video poco a poco
     -->
     <main class="escena">
       <!--
-        "escena__pin" es la zona que ScrollTrigger va a fijar.
-        Mientras esta zona este pineada, el viewport parece quieto
-        y lo unico que cambia es el tamano del bloque de video.
+        ----------------------------------------------------------
+        BLOQUE 3. ZONA QUE SE VA A QUEDAR FIJA
+        ----------------------------------------------------------
+
+        "escena__pin" es la parte realmente visible durante el efecto.
+
+        ScrollTrigger la "pinea", es decir, la deja fijada temporalmente
+        en pantalla mientras el usuario sigue haciendo scroll.
+
+        Ese detalle es crucial:
+        queremos que el usuario sienta que la pantalla no cambia de escena
+        ni baja a otro contenido, sino que el mismo encuadre permanece
+        delante de sus ojos mientras solo evoluciona el video.
+
+        Si no existiera este contenedor pineado, al hacer scroll
+        la pagina seguiria desplazandose normalmente y el efecto perderia
+        mucha claridad visual.
       -->
       <div class="escena__pin">
         <!--
-          Estas tres lineas son solo decorativas.
-          Dan la reticula blanca sobre el fondo negro, como en la version
-          anterior que querias conservar.
+          --------------------------------------------------------
+          BLOQUE 4. LINEAS DECORATIVAS DE FONDO
+          --------------------------------------------------------
+
+          Estas lineas reproducen la composicion original que querias
+          conservar: fondo negro con tres guias verticales blancas.
+
+          No contienen contenido funcional.
+          Su funcion es puramente visual:
+          dar estructura, ritmo y una sensacion de reticula
+          al espacio vacio alrededor del video.
+
+          Usamos tres elementos distintos en lugar de dibujarlas con SVG
+          o con un pseudo-elemento porque asi el codigo es mas transparente
+          para quien este aprendiendo.
         -->
         <div class="linea linea-1"></div>
         <div class="linea linea-2"></div>
         <div class="linea linea-3"></div>
 
         <!--
-          Este section es el marco visible del video.
-          Empieza pequeno, centrado y con esquinas redondeadas.
+          --------------------------------------------------------
+          BLOQUE 5. MARCO DEL VIDEO
+          --------------------------------------------------------
 
-          No ampliamos directamente la etiqueta <video>, sino su contenedor.
-          Eso nos da mas control sobre:
-          - el recorte
-          - el borde redondeado
-          - la sombra
-          - la expansion hasta ocupar toda la pantalla
+          Este <section> no es el video en si, sino su marco contenedor.
+
+          Esto es muy importante a nivel de arquitectura visual:
+          animamos el contenedor y no la etiqueta <video> directamente.
+
+          Ventajas de hacerlo asi:
+          - podemos controlar el recorte con overflow: hidden
+          - podemos redondear esquinas con border-radius
+          - podemos aplicar sombra al bloque entero
+          - podemos hacer que el video parezca una pieza flotante
+            antes de convertirse en fondo a pantalla completa
+
+          El bloque arranca pequeno, centrado y con esquinas redondeadas.
+          Durante el scroll se transformara hasta ocupar toda la ventana.
         -->
         <section class="bloque-video">
           <!--
-            El video se reproduce automaticamente, sin sonido y en bucle.
-            Es la opcion habitual para fondos animados.
+            ------------------------------------------------------
+            BLOQUE 6. ETIQUETA VIDEO
+            ------------------------------------------------------
+
+            autoplay:
+            intenta reproducir el video automaticamente al cargar.
+
+            muted:
+            es esencial para que autoplay funcione en la mayoria
+            de navegadores actuales.
+
+            loop:
+            al llegar al final, el video vuelve a empezar.
+
+            playsinline:
+            evita que algunos moviles fuercen fullscreen nativo,
+            ya que aqui queremos controlar nosotros el efecto visual
+            dentro de la pagina.
           -->
           <video class="video-central" autoplay muted loop playsinline>
+            <!--
+              Fuente del archivo de video.
+              Si en el futuro cambias el archivo, normalmente bastaria
+              con sustituir esta ruta.
+            -->
             <source src="./assets/video-1080p.mp4" type="video/mp4" />
+
+            <!--
+              Texto de respaldo por si el navegador no soporta <video>.
+            -->
             Tu navegador no soporta la etiqueta de video.
           </video>
         </section>
@@ -73,11 +174,25 @@
     </main>
 
     <!--
-      GSAP es el motor de animacion.
-      ScrollTrigger conecta esa animacion con el progreso del scroll.
+      ------------------------------------------------------------
+      BLOQUE 7. LIBRERIAS Y SCRIPT DEL PROYECTO
+      ------------------------------------------------------------
 
-      En este caso no usamos un temporizador de 3 segundos como antes.
-      Ahora el usuario "empuja" manualmente la expansion al hacer scroll.
+      GSAP:
+      es el motor de animacion. Cambia propiedades CSS de forma
+      fluida, eficiente y muy controlable.
+
+      ScrollTrigger:
+      es un plugin de GSAP que conecta una animacion con el scroll.
+      Gracias a el, el crecimiento del video ya no depende del tiempo,
+      sino del avance real del usuario.
+
+      script.js:
+      contiene la logica que une la estructura HTML con la animacion.
+
+      Los scripts se colocan al final del body para asegurarnos de que
+      el DOM ya esta construido cuando JavaScript intente seleccionar
+      los elementos con querySelector.
     -->
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/ScrollTrigger.min.js"></script>
