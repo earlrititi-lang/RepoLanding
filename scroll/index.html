@@ -2,80 +2,85 @@
 <html lang="es">
   <head>
     <!--
-      UTF-8 permite usar caracteres del espanol y otros simbolos sin problemas.
+      Configuracion basica del documento.
+
+      UTF-8 evita problemas con caracteres especiales.
+      La meta viewport hace que el layout use el ancho real del dispositivo,
+      algo importante para que el video se expanda bien tanto en movil
+      como en escritorio.
     -->
     <meta charset="UTF-8" />
-
-    <!--
-      Esta meta hace que la maqueta se adapte correctamente al ancho real
-      del dispositivo, especialmente en movil.
-    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <!--
-      Titulo de la pestana del navegador.
-    -->
     <title>Estructura base</title>
 
     <!--
-      Enlazamos la hoja de estilos principal de esta pantalla.
+      Hoja de estilos de esta escena.
+      Aqui definimos el fondo negro, las lineas blancas y el estado inicial
+      del bloque de video antes de que GSAP lo anime.
     -->
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <!--
-      "escena" es el lienzo principal de la composicion.
-      Aqui metemos tanto las lineas decorativas como el bloque del video.
+      "escena" es el contenedor completo del efecto.
+
+      Tiene mas altura que la ventana para que exista recorrido de scroll.
+      Ese recorrido no se usa para mostrar contenido nuevo, sino para
+      alimentar el progreso de la animacion del video.
+
+      Es decir:
+      el usuario hace scroll, pero visualmente la pantalla queda fijada
+      mientras el video crece poco a poco.
     -->
     <main class="escena">
       <!--
-        Estas tres lineas verticales no tienen contenido.
-        Solo sirven para construir la reticula visual del fondo.
+        "escena__pin" es la zona que ScrollTrigger va a fijar.
+        Mientras esta zona este pineada, el viewport parece quieto
+        y lo unico que cambia es el tamano del bloque de video.
       -->
-      <div class="linea linea-1"></div>
-      <div class="linea linea-2"></div>
-      <div class="linea linea-3"></div>
-
-      <!--
-        Este section envuelve al video.
-        No usamos el <video> suelto porque nos interesa controlar:
-        - su tamano inicial
-        - el recorte
-        - la transicion hacia pantalla completa visual
-      -->
-      <section class="bloque-video">
+      <div class="escena__pin">
         <!--
-          autoplay:
-          intenta reproducir el video automaticamente al cargar la pagina.
-
-          muted:
-          es clave para que autoplay funcione en la mayoria de navegadores.
-
-          loop:
-          al terminar, el video vuelve a empezar.
-
-          playsinline:
-          evita que en algunos moviles el navegador fuerce fullscreen nativo.
+          Estas tres lineas son solo decorativas.
+          Dan la reticula blanca sobre el fondo negro, como en la version
+          anterior que querias conservar.
         -->
-        <video class="video-central" autoplay muted loop playsinline>
-          <!--
-            Fuente del archivo de video.
-            Si mas adelante cambias el archivo, basta con actualizar esta ruta.
-          -->
-          <source src="./assets/video-1080p.mp4" type="video/mp4" />
+        <div class="linea linea-1"></div>
+        <div class="linea linea-2"></div>
+        <div class="linea linea-3"></div>
 
+        <!--
+          Este section es el marco visible del video.
+          Empieza pequeno, centrado y con esquinas redondeadas.
+
+          No ampliamos directamente la etiqueta <video>, sino su contenedor.
+          Eso nos da mas control sobre:
+          - el recorte
+          - el borde redondeado
+          - la sombra
+          - la expansion hasta ocupar toda la pantalla
+        -->
+        <section class="bloque-video">
           <!--
-            Texto de respaldo para navegadores que no soporten la etiqueta <video>.
+            El video se reproduce automaticamente, sin sonido y en bucle.
+            Es la opcion habitual para fondos animados.
           -->
-          Tu navegador no soporta la etiqueta de video.
-        </video>
-      </section>
+          <video class="video-central" autoplay muted loop playsinline>
+            <source src="./assets/video-1080p.mp4" type="video/mp4" />
+            Tu navegador no soporta la etiqueta de video.
+          </video>
+        </section>
+      </div>
     </main>
 
     <!--
-      El JavaScript se carga al final para que el HTML ya exista
-      cuando el script intente buscar elementos en la pagina.
+      GSAP es el motor de animacion.
+      ScrollTrigger conecta esa animacion con el progreso del scroll.
+
+      En este caso no usamos un temporizador de 3 segundos como antes.
+      Ahora el usuario "empuja" manualmente la expansion al hacer scroll.
     -->
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/gsap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/ScrollTrigger.min.js"></script>
     <script src="./script.js"></script>
   </body>
 </html>
