@@ -3,41 +3,44 @@
   BLOQUE 1. REFERENCIAS A ELEMENTOS DEL DOM
   ------------------------------------------------------------
 
-  Necesitamos dos elementos principales para construir el efecto:
+  Necesitamos tres elementos para construir el efecto completo:
 
-  1. pinSection:
-     es la parte de la escena que ScrollTrigger dejara fijada.
-     Mientras esta zona este "pineada", el usuario sigue haciendo scroll
-     pero la imagen visible no cambia de seccion.
+  1. pinSection
+     Es la zona de la escena que ScrollTrigger dejara visualmente fija.
+     Mientras esta zona este pineada, el usuario podra seguir haciendo scroll
+     pero la pantalla no avanzara a otro contenido.
 
-  2. videoBlock:
-     es el contenedor del video que ira creciendo progresivamente.
+  2. videoBlock
+     Es el contenedor del video. Lo animamos a el, y no al <video> directamente,
+     porque asi controlamos mejor su recorte, su borde redondeado y su sombra.
 
-  Guardamos ambas referencias al principio para que el resto del script
-  sea mas claro y no tengamos que repetir querySelector varias veces.
+  3. blackFill
+     Es la capa negra que aparecera despues de que el video llegue
+     a pantalla completa. Su animacion ira de izquierda a derecha.
 */
 const pinSection = document.querySelector(".escena__pin");
 const videoBlock = document.querySelector(".bloque-video");
+const blackFill = document.querySelector(".relleno-negro");
 
 /*
   ------------------------------------------------------------
   BLOQUE 2. COMPROBACION DE SEGURIDAD
   ------------------------------------------------------------
 
-  Antes de animar nada comprobamos que:
-  - el HTML contiene los elementos necesarios
+  Antes de inicializar el efecto comprobamos que:
+  - existen los nodos del HTML que necesitamos
   - GSAP esta cargado
   - ScrollTrigger esta cargado
 
-  Si alguna de esas piezas falta, el efecto no puede construirse bien.
-  En ese caso:
-  - mostramos un aviso por consola
-  - evitamos que el script siga y provoque errores
-
-  Este patron es util para hacer el codigo mas robusto,
-  especialmente cuando se depende de librerias externas.
+  Si falta alguna pieza, detenemos la ejecucion para evitar errores.
 */
-if (!pinSection || !videoBlock || typeof gsap === "undefined" || typeof ScrollTrigger === "undefined") {
+if (
+  !pinSection ||
+  !videoBlock ||
+  !blackFill ||
+  typeof gsap === "undefined" ||
+  typeof ScrollTrigger === "undefined"
+) {
   console.warn("No se pudo iniciar la animacion del video.");
 } else {
   /*
@@ -45,33 +48,26 @@ if (!pinSection || !videoBlock || typeof gsap === "undefined" || typeof ScrollTr
     BLOQUE 3. REGISTRO DEL PLUGIN
     ----------------------------------------------------------
 
-    ScrollTrigger no funciona automaticamente por el mero hecho
-    de cargar su script. Primero hay que registrarlo dentro de GSAP.
-
-    Este paso le dice a GSAP:
-    "a partir de ahora puedes usar este plugin en mis animaciones".
+    ScrollTrigger debe registrarse dentro de GSAP antes de usarse.
+    Si no se hace este paso, GSAP no sabra interpretar la propiedad
+    "scrollTrigger" dentro de los timelines o tweens.
   */
   gsap.registerPlugin(ScrollTrigger);
 
   /*
     ----------------------------------------------------------
-    BLOQUE 4. AJUSTE INICIAL DEL BLOQUE DE VIDEO
+    BLOQUE 4. ESTADO INICIAL DE LOS ELEMENTOS ANIMADOS
     ----------------------------------------------------------
 
-    Aunque el centrado visual ya esta preparado en CSS,
-    aqui reforzamos desde GSAP la forma en la que el bloque
-    debe interpretar sus transformaciones.
+    Reforzamos desde GSAP dos cosas importantes:
 
-    xPercent: -50 y yPercent: -50:
-    equivalen al translate(-50%, -50%) clasico de CSS.
+    1. El bloque de video debe quedar centrado tomando como referencia
+       su propio centro, no su esquina superior izquierda.
 
-    ¿Por que repetirlo aqui desde GSAP?
-    Porque asi la animacion trabaja siempre con el mismo sistema
-    de transformaciones y el punto de referencia queda mejor definido.
-
-    transformOrigin: "center center":
-    indica que cualquier escalado o transformacion debe entenderse
-    tomando el centro del elemento como origen.
+    2. La capa negra debe arrancar visualmente cerrada.
+       Para eso usamos scaleX(0), que equivale a "ancho aparente cero".
+       El origen de esa escala se coloca en la izquierda para que,
+       al crecer, el relleno negro avance hacia la derecha.
   */
   gsap.set(videoBlock, {
     xPercent: -50,
@@ -79,152 +75,150 @@ if (!pinSection || !videoBlock || typeof gsap === "undefined" || typeof ScrollTr
     transformOrigin: "center center"
   });
 
+  gsap.set(blackFill, {
+    scaleX: 0,
+    transformOrigin: "left center"
+  });
+
   /*
     ----------------------------------------------------------
-    BLOQUE 5. TIMELINE PRINCIPAL
+    BLOQUE 5. TIMELINE PRINCIPAL VINCULADO AL SCROLL
     ----------------------------------------------------------
 
-    Creamos un timeline de GSAP con un scrollTrigger asociado.
+    Este timeline contiene DOS fases consecutivas:
 
-    La idea clave de este proyecto es esta:
-    ya no lanzamos la expansion del video con un temporizador fijo,
-    sino que la conectamos directamente con el scroll del usuario.
+    FASE 1:
+    el video se expande desde su tamano pequeno inicial
+    hasta ocupar toda la pantalla.
 
-    Por tanto:
-    - si el usuario hace un poco de scroll, el video crece un poco
-    - si hace mucho scroll, el video sigue creciendo
-    - si vuelve hacia arriba, el video puede retroceder en su expansion
+    FASE 2:
+    una capa negra cubre el viewport de izquierda a derecha.
 
-    Esto produce una sensacion mucho mas interactiva que una animacion
-    por tiempo.
+    Ambas fases se gobiernan con el mismo scroll del usuario.
+    Eso se consigue porque:
+    - las dos animaciones estan dentro del mismo timeline
+    - ese timeline tiene un ScrollTrigger con scrub
+
+    Asi, el usuario "empuja" ambas transiciones con el scroll.
   */
   gsap.timeline({
     scrollTrigger: {
       /*
         trigger:
-        define que elemento dispara el comienzo del calculo.
-
-        En este caso usamos ".escena", es decir, el contenedor general
-        del efecto.
+        usamos la escena completa como referencia del comienzo del efecto.
       */
       trigger: ".escena",
 
       /*
         start: "top top"
-
-        Significa:
-        - cuando la parte superior del trigger
-        - coincide con la parte superior del viewport
-
-        En ese instante la animacion empieza a estar activa.
+        significa:
+        el efecto arranca cuando el borde superior de la escena
+        coincide con el borde superior del viewport.
       */
       start: "top top",
 
       /*
-        end: "+=130%"
+        end: "+=220%"
+        reservamos un recorrido largo de scroll para repartir bien
+        las dos fases del timeline:
+        - expansion del video
+        - barrido negro
 
-        Indica que la animacion no termina enseguida, sino despues
-        de un tramo adicional de scroll relativamente largo.
-
-        Ese tramo extra es lo que permite que la expansion se sienta
-        progresiva y no brusca.
+        Al aumentar este valor, la transicion se siente mas progresiva.
       */
-      end: "+=130%",
+      end: "+=220%",
 
       /*
         scrub: 1.2
+        vincula el progreso del timeline al progreso del scroll
+        y anade una ligera amortiguacion.
 
-        "scrub" vincula el progreso del timeline al progreso del scroll.
-
-        Cuando scrub es numerico, anade una pequena inercia o retraso
-        entre el gesto del usuario y la respuesta de la animacion.
-
-        En la practica:
-        no responde de forma seca, sino algo mas amortiguada,
-        que es precisamente la sensacion que estabas buscando.
+        Eso hace que el movimiento no responda de forma seca o brusca.
       */
       scrub: 1.2,
 
       /*
         pin: pinSection
+        fija visualmente la zona de la escena donde ocurre el efecto.
 
-        Este es el corazon del efecto visual.
-
-        Mientras dura el tramo de animacion, ScrollTrigger fija visualmente
-        la seccion que hemos indicado. Eso provoca que la pantalla parezca
-        quieta aunque el usuario siga desplazando la rueda del raton
-        o arrastrando la pagina.
-
-        Resultado:
-        no vemos "bajar" la pagina, sino crecer el video dentro del mismo encuadre.
+        Gracias a esto:
+        - la pantalla no baja mostrando otra seccion
+        - el usuario siente que permanece dentro del mismo encuadre
+        - solo cambia el estado del video y, despues, el de la cortina negra
       */
       pin: pinSection,
 
       /*
-        anticipatePin:
-        ayuda a que el comienzo del pin sea mas suave, reduciendo saltos.
-
-        invalidateOnRefresh:
-        obliga a recalcular valores en cada refresh, algo util si cambia
-        el tamano de ventana o si el layout se altera.
+        anticipatePin reduce pequenos tirones al inicio del pin.
+        invalidateOnRefresh obliga a recalcular medidas al refrescar.
       */
       anticipatePin: 1,
       invalidateOnRefresh: true
     }
-  }).to(videoBlock, {
-    /*
-      --------------------------------------------------------
-      BLOQUE 6. PROPIEDADES ANIMADAS
-      --------------------------------------------------------
+  })
+    .to(videoBlock, {
+      /*
+        --------------------------------------------------------
+        BLOQUE 6. FASE 1: EXPANSION DEL VIDEO
+        --------------------------------------------------------
 
-      Aqui definimos el estado final del bloque de video.
+        En esta primera mitad del timeline, el bloque de video:
+        - gana ancho hasta cubrir el viewport
+        - gana alto hasta cubrir el viewport
+        - pierde esquinas redondeadas
+        - pierde la sombra
 
-      width y height:
-      terminan ocupando exactamente el ancho y alto del viewport.
+        El resultado es que deja de parecer una pieza flotante
+        y pasa a comportarse como un fondo completo.
 
-      Usamos funciones en lugar de numeros fijos para que el valor final
-      se calcule en tiempo real en cada refresh.
-      Asi, si cambia el tamano de la ventana, la animacion se adapta.
+        duration: 1
+        no significa "1 segundo real". Dentro de un timeline con scrub,
+        duration funciona como proporcion interna del recorrido.
+      */
+      width: () => window.innerWidth,
+      height: () => window.innerHeight,
+      borderRadius: 0,
+      boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+      ease: "none",
+      duration: 1
+    })
+    .to(blackFill, {
+      /*
+        --------------------------------------------------------
+        BLOQUE 7. FASE 2: RELLENO NEGRO DE IZQUIERDA A DERECHA
+        --------------------------------------------------------
 
-      borderRadius: 0
-      elimina las esquinas redondeadas al final del proceso.
-      La pieza pequena deja de parecer una tarjeta flotante y pasa
-      a comportarse como un fondo completo.
+        Esta segunda animacion empieza solo cuando la expansion del video
+        ya ha terminado dentro del timeline.
 
-      boxShadow: "0 0 0 rgba(0, 0, 0, 0)"
-      elimina la sombra al final para que el video se integre totalmente
-      en la pantalla y ya no parezca un objeto separado.
+        scaleX: 1
+        hace que la capa negra pase de ancho visual cero
+        a ancho completo.
 
-      ease: "none"
-      es importante aqui porque no queremos una aceleracion artificial
-      independiente del scroll.
+        Como su transformOrigin esta fijado en la izquierda,
+        el barrido nace en ese borde y avanza hacia la derecha.
 
-      Como el ritmo lo marca el usuario al desplazarse, la animacion
-      debe seguir ese ritmo de la forma mas directa posible.
-    */
-    width: () => window.innerWidth,
-    height: () => window.innerHeight,
-    borderRadius: 0,
-    boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
-    ease: "none"
-  });
+        Lo mas importante:
+        esta fase sigue vinculada al scroll.
+        No es una animacion autonoma por tiempo, sino la segunda parte
+        del mismo timeline gobernado por ScrollTrigger.
+      */
+      scaleX: 1,
+      ease: "none",
+      duration: 1
+    });
 
   /*
     ----------------------------------------------------------
-    BLOQUE 7. RESPUESTA A CAMBIOS DE TAMANO
+    BLOQUE 8. ADAPTACION A CAMBIOS DE TAMANO
     ----------------------------------------------------------
 
-    Si el usuario redimensiona la ventana, las medidas del viewport cambian.
+    Como la fase de expansion usa window.innerWidth y window.innerHeight,
+    necesitamos refrescar ScrollTrigger si cambia el tamano de la ventana.
 
-    Como nuestro estado final depende de:
-    - window.innerWidth
-    - window.innerHeight
-
-    necesitamos pedir a ScrollTrigger que recalcule su informacion.
-
-    refresh() vuelve a medir:
+    Eso obliga a recalcular:
+    - medidas
     - puntos de inicio y fin
-    - posiciones
     - valores dependientes del viewport
   */
   window.addEventListener("resize", () => {
@@ -233,14 +227,11 @@ if (!pinSection || !videoBlock || typeof gsap === "undefined" || typeof ScrollTr
 
   /*
     ----------------------------------------------------------
-    BLOQUE 8. REFRESH INICIAL
+    BLOQUE 9. REFRESH INICIAL
     ----------------------------------------------------------
 
-    Ejecutamos un refresh al cargar para asegurarnos de que ScrollTrigger
-    mida bien todos los elementos desde el principio.
-
-    Es un buen cierre del proceso de inicializacion porque deja preparada
-    la escena antes de que el usuario interactue con ella.
+    Ejecutamos un refresh inicial para que ScrollTrigger mida todo
+    correctamente antes de la primera interaccion del usuario.
   */
   ScrollTrigger.refresh();
 }

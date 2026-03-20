@@ -113,6 +113,7 @@ body {
   width: 1px;
   height: 100%;
   background-color: rgba(255, 255, 255, 0.18);
+  z-index: 1;
 }
 
 /*
@@ -209,4 +210,35 @@ body {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+/*
+  ------------------------------------------------------------
+  BLOQUE 8. CORTINA NEGRA
+  ------------------------------------------------------------
+
+  Esta capa cubre toda la zona visible, pero al principio no ocupa
+  realmente ancho porque se dibuja con scaleX(0).
+
+  ¿Por que usamos transform en lugar de width?
+  Porque animar transform suele ser mas suave y mas eficiente
+  que recalcular anchuras continuamente.
+
+  transform-origin: left center:
+  hace que el crecimiento horizontal nazca en el borde izquierdo
+  y avance hacia la derecha, justo como una cortina o relleno lateral.
+
+  z-index: 3:
+  coloca esta capa por encima del video para que pueda taparlo
+  en la segunda fase de la animacion.
+*/
+.relleno-negro {
+  position: absolute;
+  inset: 0;
+  background-color: #000000;
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+  pointer-events: none;
+  z-index: 3;
 }

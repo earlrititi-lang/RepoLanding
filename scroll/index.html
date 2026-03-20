@@ -170,12 +170,30 @@
             Tu navegador no soporta la etiqueta de video.
           </video>
         </section>
+
+        <!--
+          --------------------------------------------------------
+          BLOQUE 7. CAPA DE RELLENO NEGRO
+          --------------------------------------------------------
+
+          Esta capa no se ve al principio porque arranca "cerrada"
+          horizontalmente desde la izquierda.
+
+          Su trabajo es protagonizar la segunda fase del efecto:
+          una vez que el video ya ocupa toda la pantalla,
+          esta capa avanza de izquierda a derecha como una cortina negra.
+
+          Lo importante es que no sera una animacion por tiempo,
+          sino una animacion ligada al scroll exactamente igual que
+          la expansion del video.
+        -->
+        <div class="relleno-negro"></div>
       </div>
     </main>
 
     <!--
       ------------------------------------------------------------
-      BLOQUE 7. LIBRERIAS Y SCRIPT DEL PROYECTO
+      BLOQUE 8. LIBRERIAS Y SCRIPT DEL PROYECTO
       ------------------------------------------------------------
 
       GSAP:
