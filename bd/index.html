@@ -2,59 +2,97 @@
 <html lang="es">
   <head>
     <!--
-      UTF-8 evita problemas con caracteres especiales del espanol.
+      Configuracion basica del documento.
+
+      UTF-8:
+      permite representar correctamente caracteres especiales.
+
+      viewport:
+      hace que la interfaz escale bien en movil y no se vea "alejada".
     -->
     <meta charset="UTF-8" />
-
-    <!--
-      Esta meta ayuda a que la interfaz se vea correctamente en movil.
-    -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <!--
-      Titulo de la pestana del navegador.
+      Titulo que aparece en la pestana del navegador.
     -->
     <title>Login y registro</title>
 
     <!--
-      Hoja de estilos de esta mini aplicacion.
+      Hoja de estilos de esta pequena interfaz.
+      Aqui se define la tarjeta, el formulario y el estado oculto
+      de la vista de exito.
     -->
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <!--
-      La tarjeta principal contiene tanto el formulario como la vista
-      de exito. JavaScript alterna entre ambas.
+      "card" es el contenedor visual principal de la aplicacion.
+
+      Todo el flujo cabe dentro de esta tarjeta:
+      1. Vista del formulario
+      2. Vista final de login correcto
+
+      La idea es sencilla:
+      no navegamos a otra pagina, sino que mostramos u ocultamos bloques
+      segun el estado actual de la interfaz.
     -->
     <main class="card">
       <!--
-        Vista principal del formulario.
-        Aqui se muestran registro y login usando el mismo marcado.
+        Vista del formulario.
+
+        Esta vista sirve tanto para registrar usuarios como para iniciar sesion.
+        En lugar de tener dos formularios distintos, reutilizamos uno solo
+        y cambiamos algunos detalles desde JavaScript:
+
+        - el titulo
+        - el texto del boton principal
+        - el texto del boton secundario
+        - la visibilidad del campo "Nombre"
       -->
       <div id="form-view">
         <!--
-          El titulo cambia dinamicamente entre "Registro" y "Login".
+          El contenido de este titulo se cambia desde JavaScript.
+          Empieza en "Registro" porque ese es el modo inicial.
         -->
         <h1 id="title">Registro</h1>
 
         <!--
-          Un solo formulario sirve para dos modos:
+          Formulario reutilizable.
+
+          El mismo marcado sirve para dos acciones:
           - registro
           - login
 
-          JavaScript adapta etiquetas, campos visibles y texto del boton.
+          Esto simplifica mucho el proyecto porque no duplicamos estructura,
+          estilos ni listeners de eventos.
         -->
         <form id="form">
           <!--
-            El campo nombre solo se usa durante el registro.
-            En login se oculta desde JavaScript.
+            Campo de nombre.
+
+            Solo tiene sentido en registro, porque al iniciar sesion
+            nos basta con email y contrasena.
+
+            Por eso JavaScript lo ocultara en modo login.
           -->
           <input id="name" type="text" placeholder="Nombre" />
 
           <!--
-            Email y contrasena se usan en ambos modos.
+            Campo email.
+
+            type="email" permite una validacion basica del navegador.
+            required impide enviar el formulario vacio.
           -->
           <input id="email" type="email" placeholder="Email" required />
+
+          <!--
+            Campo password.
+
+            minlength="6" aplica una validacion minima desde el navegador.
+            Aun asi, la validacion realmente importante siempre debe repetirse
+            en el servidor.
+          -->
           <input
             id="password"
             type="password"
@@ -64,26 +102,37 @@
           />
 
           <!--
-            El texto de este boton cambia segun el modo actual.
+            Boton principal del formulario.
+            El texto cambia segun estemos en registro o login.
           -->
           <button id="submit" type="submit">Guardar usuario</button>
         </form>
 
         <!--
-          Zona donde se muestran mensajes de exito o error devueltos
-          por el servidor.
+          Aqui escribimos mensajes devueltos por el backend.
+          Por ejemplo:
+          - "Usuario registrado correctamente."
+          - "Ese usuario ya esta registrado."
+          - "Usuario no registrado."
         -->
         <p id="message"></p>
 
         <!--
-          Boton que alterna entre registro y login.
+          Boton secundario para alternar entre modos.
+          Si estamos en registro, nos manda a login.
+          Si estamos en login, nos devuelve a registro.
         -->
         <button id="toggle" type="button">Ir a login</button>
       </div>
 
       <!--
-        Vista que solo aparece tras un login correcto.
-        Empieza oculta gracias a la clase "hidden".
+        Vista de exito.
+
+        No se ve al principio porque tiene la clase "hidden".
+        Solo aparece cuando el login es correcto.
+
+        Fijate en que esta vista no sustituye el HTML completo:
+        simplemente ocultamos el formulario y mostramos este bloque.
       -->
       <div id="success-view" class="hidden">
         <h1>Inicio de sesion correcto</h1>
@@ -92,8 +141,9 @@
     </main>
 
     <!--
-      Cargamos el JavaScript al final para que todos los nodos del HTML
-      existan cuando el script los busque.
+      Cargamos el script al final del body.
+      Asi nos aseguramos de que todos los elementos del HTML existen
+      cuando JavaScript intente buscarlos con getElementById.
     -->
     <script src="script.js"></script>
   </body>

@@ -1,18 +1,25 @@
 /*
-  El selector universal aplica box-sizing: border-box a todo.
-  Asi padding y borde se incluyen dentro del ancho y alto final,
-  lo que simplifica mucho el calculo del layout.
+  Reset minimo.
+
+  Solo cambiamos box-sizing en todos los elementos para que el calculo
+  de anchos y altos sea mas intuitivo. Con border-box, el padding y el borde
+  quedan incluidos en el tamano final del elemento.
 */
 * {
   box-sizing: border-box;
 }
 
 /*
-  El body ocupa al menos toda la ventana y centra el contenido.
+  El body funciona como un gran lienzo centrador.
+
+  margin: 0:
+  elimina el margen por defecto del navegador.
+
+  min-height: 100vh:
+  garantiza que el fondo ocupe como minimo toda la pantalla.
 
   display: grid + place-items: center:
-  es una forma muy directa de centrar la tarjeta tanto en horizontal
-  como en vertical.
+  centra la tarjeta principal tanto en horizontal como en vertical.
 */
 body {
   margin: 0;
@@ -24,12 +31,13 @@ body {
 }
 
 /*
-  ".card" es la caja principal de la interfaz.
+  Tarjeta principal de la interfaz.
 
   width: min(90%, 360px):
-  significa "usa el valor mas pequeno entre 90% del ancho disponible
-  y 360px". Asi la tarjeta se adapta bien en movil y no crece demasiado
-  en escritorio.
+  - en pantallas pequenas usa el 90% del ancho disponible
+  - en pantallas grandes no supera 360px
+
+  Esto crea una interfaz compacta, facil de leer y razonablemente responsive.
 */
 .card {
   width: min(90%, 360px);
@@ -41,8 +49,10 @@ body {
 }
 
 /*
-  El formulario se organiza en una sola columna con separacion uniforme
-  entre campos.
+  El formulario usa una rejilla simple de una sola columna.
+
+  gap: 12px separa los campos de forma uniforme sin tener que poner
+  margenes manuales en cada input.
 */
 form {
   display: grid;
@@ -50,8 +60,11 @@ form {
 }
 
 /*
-  Inputs y botones comparten espaciado interno y tipografia
-  para que toda la interfaz se vea consistente.
+  Inputs y botones comparten reglas comunes:
+  - mismo padding
+  - misma tipografia heredada
+
+  Esto mantiene una coherencia visual basica.
 */
 input,
 button {
@@ -60,15 +73,17 @@ button {
 }
 
 /*
-  cursor: pointer comunica visualmente que el boton es interactivo.
+  Indicamos visualmente que el boton es interactivo.
 */
 button {
   cursor: pointer;
 }
 
 /*
-  Reservamos altura minima para los mensajes.
-  Asi la tarjeta no "salta" de tamano cuando aparece texto.
+  El area de mensajes reserva altura fija.
+
+  Sin esta tecnica, la tarjeta cambiaria de tamano cuando apareciese
+  un mensaje y el contenido daria un pequeno salto visual.
 */
 #message {
   min-height: 24px;
@@ -76,8 +91,10 @@ button {
 }
 
 /*
-  Esta utilidad oculta elementos por completo.
-  Se usa para esconder la vista de exito hasta que el login sea valido.
+  Clase de utilidad para ocultar elementos por completo.
+
+  Se usa en la vista de exito para mantenerla escondida al principio
+  y mostrarla solo cuando el login sea correcto.
 */
 .hidden {
   display: none;
