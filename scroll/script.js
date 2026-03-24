@@ -14,13 +14,13 @@
      Es el contenedor del video. Lo animamos a el, y no al <video> directamente,
      porque asi controlamos mejor su recorte, su borde redondeado y su sombra.
 
-  3. blackFill
-     Es la capa negra que aparecera despues de que el video llegue
-     a pantalla completa. Su animacion ira de izquierda a derecha.
+  3. blackBars
+     Son las seis barras verticales negras que aparecen despues
+     de que el video llegue a pantalla completa.
 */
 const pinSection = document.querySelector(".escena__pin");
 const videoBlock = document.querySelector(".bloque-video");
-const blackFill = document.querySelector(".relleno-negro");
+const blackBars = Array.from(document.querySelectorAll(".barra-negra"));
 
 /*
   ------------------------------------------------------------
@@ -37,7 +37,7 @@ const blackFill = document.querySelector(".relleno-negro");
 if (
   !pinSection ||
   !videoBlock ||
-  !blackFill ||
+  blackBars.length !== 6 ||
   typeof gsap === "undefined" ||
   typeof ScrollTrigger === "undefined"
 ) {
@@ -61,21 +61,19 @@ if (
 
     Reforzamos desde GSAP dos cosas importantes:
 
-    1. El bloque de video debe quedar centrado tomando como referencia
-       su propio centro, no su esquina superior izquierda.
+    1. El bloque de video conserva el centrado definido en CSS
+       para que al crecer siga ocupando la pantalla correctamente.
 
-    2. La capa negra debe arrancar visualmente cerrada.
+    2. Las barras negras deben arrancar visualmente cerradas.
        Para eso usamos scaleX(0), que equivale a "ancho aparente cero".
-       El origen de esa escala se coloca en la izquierda para que,
-       al crecer, el relleno negro avance hacia la derecha.
+       El origen de esa escala se coloca en la izquierda para que
+       cada barra crezca horizontalmente dentro de su propia columna.
   */
   gsap.set(videoBlock, {
-    xPercent: -50,
-    yPercent: -50,
     transformOrigin: "center center"
   });
 
-  gsap.set(blackFill, {
+  gsap.set(blackBars, {
     scaleX: 0,
     transformOrigin: "left center"
   });
@@ -92,7 +90,7 @@ if (
     hasta ocupar toda la pantalla.
 
     FASE 2:
-    una capa negra cubre el viewport de izquierda a derecha.
+    seis barras negras entran en secuencia de izquierda a derecha.
 
     Ambas fases se gobiernan con el mismo scroll del usuario.
     Eso se consigue porque:
@@ -121,8 +119,8 @@ if (
         end: "+=220%"
         reservamos un recorrido largo de scroll para repartir bien
         las dos fases del timeline:
-        - expansion del video
-        - barrido negro
+    - expansion del video
+    - entrada escalonada de las barras negras
 
         Al aumentar este valor, la transicion se siente mas progresiva.
       */
@@ -144,7 +142,7 @@ if (
         Gracias a esto:
         - la pantalla no baja mostrando otra seccion
         - el usuario siente que permanece dentro del mismo encuadre
-        - solo cambia el estado del video y, despues, el de la cortina negra
+        - solo cambia el estado del video y, despues, el de las barras negras
       */
       pin: pinSection,
 
@@ -182,31 +180,35 @@ if (
       ease: "none",
       duration: 1
     })
-    .to(blackFill, {
+    .to(blackBars, {
       /*
         --------------------------------------------------------
-        BLOQUE 7. FASE 2: RELLENO NEGRO DE IZQUIERDA A DERECHA
+        BLOQUE 7. FASE 2: BARRAS NEGRAS EN ESCALERA
         --------------------------------------------------------
 
-        Esta segunda animacion empieza solo cuando la expansion del video
+        Esta segunda animacion empieza cuando la expansion del video
         ya ha terminado dentro del timeline.
 
+        El tercer parametro del tween es '+=0.14'.
+        Eso inserta una pequena pausa entre el fullscreen del video
+        y el comienzo de la secuencia de barras.
+
         scaleX: 1
-        hace que la capa negra pase de ancho visual cero
-        a ancho completo.
+        hace que cada barra pase de ancho visual cero
+        a su anchura completa.
 
-        Como su transformOrigin esta fijado en la izquierda,
-        el barrido nace en ese borde y avanza hacia la derecha.
+        Como todas comparten transformOrigin en la izquierda,
+        cada una nace desde su propio borde izquierdo.
 
-        Lo mas importante:
-        esta fase sigue vinculada al scroll.
-        No es una animacion autonoma por tiempo, sino la segunda parte
-        del mismo timeline gobernado por ScrollTrigger.
+        stagger:
+        introduce un pequeno retraso entre barras para que entren
+        una detras de otra, de izquierda a derecha.
       */
       scaleX: 1,
       ease: "none",
-      duration: 1
-    });
+      duration: 0.9,
+      stagger: 0.08
+    }, "+=0.14");
 
   /*
     ----------------------------------------------------------

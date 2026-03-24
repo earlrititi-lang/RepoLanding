@@ -44,6 +44,7 @@
       - la altura especial de la escena para generar scroll
       - la posicion de las lineas blancas
       - el tamano inicial del bloque de video
+      - la capa final de barras negras
 
       El CSS prepara la escena; luego JavaScript y GSAP se encargan
       de animarla.
@@ -173,21 +174,28 @@
 
         <!--
           --------------------------------------------------------
-          BLOQUE 7. CAPA DE RELLENO NEGRO
+          BLOQUE 7. BARRAS NEGRAS EN ESCALERA
           --------------------------------------------------------
 
-          Esta capa no se ve al principio porque arranca "cerrada"
-          horizontalmente desde la izquierda.
+          En lugar de una sola cortina negra, aqui usamos seis barras
+          verticales. Cada una aparece con un pequeno retraso respecto
+          a la anterior, de izquierda a derecha.
 
-          Su trabajo es protagonizar la segunda fase del efecto:
-          una vez que el video ya ocupa toda la pantalla,
-          esta capa avanza de izquierda a derecha como una cortina negra.
+          El resultado visual se parece a unas persianas o columnas negras
+          que entran en secuencia una vez el video ya ha llegado
+          a pantalla completa.
 
-          Lo importante es que no sera una animacion por tiempo,
-          sino una animacion ligada al scroll exactamente igual que
-          la expansion del video.
+          Como cada barra termina cubriendo un sexto del ancho,
+          al final de la secuencia el viewport queda completamente negro.
         -->
-        <div class="relleno-negro"></div>
+        <div class="barras-negras" aria-hidden="true">
+          <span class="barra-negra barra-negra-1"></span>
+          <span class="barra-negra barra-negra-2"></span>
+          <span class="barra-negra barra-negra-3"></span>
+          <span class="barra-negra barra-negra-4"></span>
+          <span class="barra-negra barra-negra-5"></span>
+          <span class="barra-negra barra-negra-6"></span>
+        </div>
       </div>
     </main>
 

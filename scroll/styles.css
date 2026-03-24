@@ -214,31 +214,63 @@ body {
 
 /*
   ------------------------------------------------------------
-  BLOQUE 8. CORTINA NEGRA
+  BLOQUE 8. BARRAS NEGRAS EN ESCALERA
   ------------------------------------------------------------
 
-  Esta capa cubre toda la zona visible, pero al principio no ocupa
-  realmente ancho porque se dibuja con scaleX(0).
+  Esta capa agrupa seis barras verticales que se dibujan por encima
+  del video una vez este ya ha crecido a pantalla completa.
 
-  ¿Por que usamos transform en lugar de width?
-  Porque animar transform suele ser mas suave y mas eficiente
-  que recalcular anchuras continuamente.
+  Cada barra:
+  - ocupa toda la altura visible
+  - tiene una anchura fija y consistente
+  - arranca con escala horizontal cero
+  - crece desde su borde izquierdo
 
-  transform-origin: left center:
-  hace que el crecimiento horizontal nazca en el borde izquierdo
-  y avance hacia la derecha, justo como una cortina o relleno lateral.
+  El orden temporal lo marcara JavaScript con un stagger
+  de izquierda a derecha.
 
-  z-index: 3:
-  coloca esta capa por encima del video para que pueda taparlo
-  en la segunda fase de la animacion.
+  Como cada barra ocupa un sexto del ancho disponible,
+  al terminar la secuencia las seis juntas forman un fondo
+  negro completo.
 */
-.relleno-negro {
+.barras-negras {
   position: absolute;
   inset: 0;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.barra-negra {
+  position: absolute;
+  top: 0;
+  width: calc(100% / 6 + 1px);
+  height: 100%;
   background-color: #000000;
   transform: scaleX(0);
   transform-origin: left center;
   will-change: transform;
-  pointer-events: none;
-  z-index: 3;
+}
+
+.barra-negra-1 {
+  left: 0;
+}
+
+.barra-negra-2 {
+  left: 16.6667%;
+}
+
+.barra-negra-3 {
+  left: 33.3334%;
+}
+
+.barra-negra-4 {
+  left: 50.0001%;
+}
+
+.barra-negra-5 {
+  left: 66.6668%;
+}
+
+.barra-negra-6 {
+  left: 83.3335%;
 }
