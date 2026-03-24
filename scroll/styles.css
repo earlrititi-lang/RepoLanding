@@ -23,6 +23,35 @@
 
 /*
   ------------------------------------------------------------
+  BLOQUE 1.5. VARIABLES DE LA COMPOSICION
+  ------------------------------------------------------------
+
+  Guardamos en variables dos tipos de datos:
+
+  1. La proporcion general del asset de la tele.
+     Nos sirve para escalarlo sin deformarlo.
+
+  2. El rectangulo exacto donde debe ir el video.
+     Estos porcentajes salen de la capa verde del SVG.
+
+     Importante:
+     no representan pixeles del viewport, sino porcentajes internos
+     del propio documento SVG. Por eso luego JavaScript necesita
+     convertirlos al tamano real con el que la tele se esta viendo.
+
+  Tenerlos aqui facilita futuros ajustes sin tener que rebuscar
+  en JavaScript ni volver a medir el archivo manualmente.
+*/
+:root {
+  --tracking-ratio: 1.4999947184;
+  --tv-hole-left: 43.1994394485;
+  --tv-hole-top: 40.5861475245;
+  --tv-hole-width: 14.5099047203;
+  --tv-hole-height: 12.7026798635;
+}
+
+/*
+  ------------------------------------------------------------
   BLOQUE 2. BODY
   ------------------------------------------------------------
 
@@ -95,47 +124,41 @@ body {
 
 /*
   ------------------------------------------------------------
-  BLOQUE 5. LINEAS DE FONDO
+  BLOQUE 5. COMPOSICION DE FONDO
   ------------------------------------------------------------
 
-  Todas las lineas comparten este estilo base:
-  - posicion absoluta para colocarlas con precision
-  - anchura muy fina
-  - altura completa del contenedor visible
-  - blanco con opacidad baja
+  ".tracking-marco" es el lienzo que contiene la tele.
 
-  Son una ayuda compositiva, no un elemento funcional.
-  Sirven para que el espacio vacio tenga estructura y no se sienta plano.
+  Lo hacemos mas grande o mas pequeno segun sea necesario para cubrir
+  el viewport entero sin deformar el asset.
+
+  width: max(...):
+  replica el comportamiento de "cover", pero en un contenedor
+  que mantiene una proporcion fija. Asi la imagen puede desbordar
+  por arriba o por los lados si hace falta, pero siempre permanece
+  alineada con el video porque ambos usan la misma referencia.
+
+  En la practica, este elemento actua como una "mesa de coordenadas":
+  el SVG se escala aqui y el video calcula su posicion tomando este
+  marco como origen.
 */
-.linea {
+.tracking-marco {
   position: absolute;
-  top: 0;
-  width: 1px;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.18);
+  top: 50%;
+  left: 50%;
+  width: max(100vw, calc(100vh * var(--tracking-ratio)));
+  aspect-ratio: var(--tracking-ratio);
+  transform: translate(-50%, -50%);
   z-index: 1;
 }
 
 /*
-  Estas tres clases colocan las lineas en distintas posiciones horizontales.
-
-  Hemos elegido tres puntos sencillos:
-  - una linea hacia la izquierda
-  - una en el centro
-  - una hacia la derecha
-
-  Asi el video pequeno parece "colgado" dentro de una reticula minimalista.
+  La imagen ocupa todo el marco y hereda su proporcion exacta.
 */
-.linea-1 {
-  left: 16.66%;
-}
-
-.linea-2 {
-  left: 50%;
-}
-
-.linea-3 {
-  left: 83.33%;
+.tracking-bg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 /*
@@ -145,48 +168,35 @@ body {
 
   ".bloque-video" es el marco visible del video.
 
-  Es importante entender que el elemento que animamos no es el <video>,
-  sino este contenedor. Eso nos da mucho mas control visual.
+  Sigue siendo el elemento que animamos, pero ya no se posiciona
+  desde CSS con un centrado generico. Su caja real se calcula
+  en JavaScript a partir del rectangulo verde del SVG.
 
-  top: 50% y left: 50%:
-  situan el punto de referencia en el centro del contenedor padre.
+  CSS lo deja en un estado neutro:
+  - top y left a cero
+  - ancho y alto a cero
+  - invisibilidad temporal
 
-  transform: translate(-50%, -50%):
-  desplaza el propio elemento hacia arriba e izquierda la mitad
-  de su tamano, de forma que su centro real coincida con el centro
-  de la pantalla.
-
-  width y height:
-  definen el tamano inicial pequeno.
+  Asi evitamos que aparezca un frame mal colocado mientras todavia
+  no conocemos el tamano final del asset en pantalla.
 
   overflow: hidden:
-  obliga al video a quedarse recortado dentro de este marco.
+  garantiza que el video no se salga de su pantalla inicial.
 
-  border-radius:
-  hace que al principio el video no parezca un fondo completo,
-  sino una pieza pequena con presencia propia.
-
-  box-shadow:
-  crea separacion visual respecto al fondo negro.
-
-  will-change:
-  informa al navegador de que varias propiedades cambiaran durante
-  la animacion, lo que puede ayudar a preparar mejor el render.
+  visibility: hidden:
+  evita un destello descolocado antes de que JavaScript aplique
+  la posicion exacta.
 */
 .bloque-video {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 116px;
-  height: 140px;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
   overflow: hidden;
-  background-color: #111111;
-  border-radius: 18px;
-  transform: translate(-50%, -50%);
-  box-shadow:
-    0 24px 60px rgba(0, 0, 0, 0.38),
-    0 8px 20px rgba(0, 0, 0, 0.2);
-  will-change: width, height, border-radius, box-shadow, transform;
+  visibility: hidden;
+  background-color: #000000;
+  will-change: top, left, width, height;
   z-index: 2;
 }
 

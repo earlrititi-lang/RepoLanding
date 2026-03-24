@@ -8,9 +8,9 @@
 
       Este archivo HTML tiene una mision muy concreta:
       montar la estructura minima necesaria para crear un efecto visual
-      donde un video pequeno, situado en el centro de una pantalla negra
-      con lineas blancas, se expande progresivamente hasta ocupar
-      todo el viewport.
+      donde un video nace dentro de la pantalla de una tele del asset
+      tracking_tv_def.svg, se expande progresivamente hasta ocupar
+      todo el viewport y, despues, queda cubierto por seis barras negras.
 
       No hay texto, botones ni contenido adicional porque la intencion
       visual es que toda la atencion recaiga en el gesto del scroll
@@ -40,10 +40,9 @@
       Hoja de estilos principal.
 
       En este CSS definimos:
-      - el fondo negro
       - la altura especial de la escena para generar scroll
-      - la posicion de las lineas blancas
-      - el tamano inicial del bloque de video
+      - la composicion de fondo de la tele
+      - el bloque de video que nace dentro del hueco verde del SVG
       - la capa final de barras negras
 
       El CSS prepara la escena; luego JavaScript y GSAP se encargan
@@ -97,44 +96,50 @@
       <div class="escena__pin">
         <!--
           --------------------------------------------------------
-          BLOQUE 4. LINEAS DECORATIVAS DE FONDO
+          BLOQUE 4. COMPOSICION DE FONDO
           --------------------------------------------------------
 
-          Estas lineas reproducen la composicion original que querias
-          conservar: fondo negro con tres guias verticales blancas.
+          Esta capa muestra el asset de la tele.
 
-          No contienen contenido funcional.
-          Su funcion es puramente visual:
-          dar estructura, ritmo y una sensacion de reticula
-          al espacio vacio alrededor del video.
+          En ese SVG hay una segunda capa de referencia pintada en verde.
+          Esa capa no se usa visualmente en la pagina final, pero si nos
+          sirve como "plano tecnico": de ahi salen las coordenadas exactas
+          de la pantalla donde debe empezar el video.
 
-          Usamos tres elementos distintos en lugar de dibujarlas con SVG
-          o con un pseudo-elemento porque asi el codigo es mas transparente
-          para quien este aprendiendo.
+          No la ponemos como background-image del contenedor completo,
+          sino dentro de un elemento propio, para poder:
+          - conservar su proporcion real
+          - centrarlo correctamente
+          - medir despues su area visible desde JavaScript
+
+          Esa medicion es la que permite colocar el video exactamente
+          donde el SVG marca el hueco verde de referencia.
         -->
-        <div class="linea linea-1"></div>
-        <div class="linea linea-2"></div>
-        <div class="linea linea-3"></div>
+        <div class="tracking-marco" aria-hidden="true">
+          <img class="tracking-bg" src="./assets/tracking_tv_def.svg" alt="" />
+        </div>
 
         <!--
           --------------------------------------------------------
           BLOQUE 5. MARCO DEL VIDEO
           --------------------------------------------------------
 
-          Este <section> no es el video en si, sino su marco contenedor.
+          Este <section> sigue siendo el contenedor que animamos,
+          no la etiqueta <video> directamente.
 
-          Esto es muy importante a nivel de arquitectura visual:
-          animamos el contenedor y no la etiqueta <video> directamente.
+          La diferencia respecto a la version anterior es la posicion
+          de arranque:
+          ya no nace en el centro por CSS, sino en el hueco exacto
+          que la capa verde del SVG define como pantalla de la tele.
 
-          Ventajas de hacerlo asi:
-          - podemos controlar el recorte con overflow: hidden
-          - podemos redondear esquinas con border-radius
-          - podemos aplicar sombra al bloque entero
-          - podemos hacer que el video parezca una pieza flotante
-            antes de convertirse en fondo a pantalla completa
+          JavaScript calcula esa caja usando las coordenadas reales
+          del asset. El proceso es este:
+          1. se leen los porcentajes medidos del hueco verde
+          2. se mide el tamano real del SVG ya escalado en pantalla
+          3. se traduce ese hueco al sistema de coordenadas visible
 
-          El bloque arranca pequeno, centrado y con esquinas redondeadas.
-          Durante el scroll se transformara hasta ocupar toda la ventana.
+          Asi, aunque el asset crezca o recorte por los bordes,
+          el video sigue alineado con su pantalla.
         -->
         <section class="bloque-video">
           <!--

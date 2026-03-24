@@ -3,22 +3,27 @@
   BLOQUE 1. REFERENCIAS A ELEMENTOS DEL DOM
   ------------------------------------------------------------
 
-  Necesitamos tres elementos para construir el efecto completo:
+  Necesitamos cuatro piezas para montar el efecto:
 
   1. pinSection
-     Es la zona de la escena que ScrollTrigger dejara visualmente fija.
-     Mientras esta zona este pineada, el usuario podra seguir haciendo scroll
-     pero la pantalla no avanzara a otro contenido.
+     Es la zona que ScrollTrigger dejara fija mientras el usuario
+     sigue avanzando con el scroll.
 
-  2. videoBlock
-     Es el contenedor del video. Lo animamos a el, y no al <video> directamente,
-     porque asi controlamos mejor su recorte, su borde redondeado y su sombra.
+  2. sceneFrame
+     Es el contenedor que escala el SVG de la tele con proporcion fija.
+     Gracias a el podemos medir donde cae realmente la pantalla
+     dentro del viewport.
 
-  3. blackBars
-     Son las seis barras verticales negras que aparecen despues
-     de que el video llegue a pantalla completa.
+  3. videoBlock
+     Es el marco del video que arranca dentro del hueco de la tele
+     y luego se expande a fullscreen.
+
+  4. blackBars
+     Son las seis barras verticales que cierran la escena
+     de izquierda a derecha cuando el video ya ha llenado la pantalla.
 */
 const pinSection = document.querySelector(".escena__pin");
+const sceneFrame = document.querySelector(".tracking-marco");
 const videoBlock = document.querySelector(".bloque-video");
 const blackBars = Array.from(document.querySelectorAll(".barra-negra"));
 
@@ -27,201 +32,210 @@ const blackBars = Array.from(document.querySelectorAll(".barra-negra"));
   BLOQUE 2. COMPROBACION DE SEGURIDAD
   ------------------------------------------------------------
 
-  Antes de inicializar el efecto comprobamos que:
-  - existen los nodos del HTML que necesitamos
+  Antes de animar nada, comprobamos que:
+  - el HTML contiene todas las piezas necesarias
   - GSAP esta cargado
-  - ScrollTrigger esta cargado
+  - ScrollTrigger esta disponible
 
-  Si falta alguna pieza, detenemos la ejecucion para evitar errores.
+  Si falta algo, mostramos un aviso y evitamos errores en consola.
 */
 if (
   !pinSection ||
+  !sceneFrame ||
   !videoBlock ||
   blackBars.length !== 6 ||
   typeof gsap === "undefined" ||
   typeof ScrollTrigger === "undefined"
 ) {
-  console.warn("No se pudo iniciar la animacion del video.");
+  console.warn("No se pudo iniciar la animacion principal.");
 } else {
   /*
     ----------------------------------------------------------
     BLOQUE 3. REGISTRO DEL PLUGIN
     ----------------------------------------------------------
 
-    ScrollTrigger debe registrarse dentro de GSAP antes de usarse.
-    Si no se hace este paso, GSAP no sabra interpretar la propiedad
-    "scrollTrigger" dentro de los timelines o tweens.
+    ScrollTrigger debe registrarse dentro de GSAP antes de usarlo.
   */
   gsap.registerPlugin(ScrollTrigger);
 
   /*
     ----------------------------------------------------------
-    BLOQUE 4. ESTADO INICIAL DE LOS ELEMENTOS ANIMADOS
+    BLOQUE 4. LECTURA DE LAS MEDIDAS DEL HUECO DE LA TELE
     ----------------------------------------------------------
 
-    Reforzamos desde GSAP dos cosas importantes:
+    Los porcentajes del hueco verde viven en CSS como variables.
+    Asi mantenemos la medicion centralizada en un solo sitio.
 
-    1. El bloque de video conserva el centrado definido en CSS
-       para que al crecer siga ocupando la pantalla correctamente.
-
-    2. Las barras negras deben arrancar visualmente cerradas.
-       Para eso usamos scaleX(0), que equivale a "ancho aparente cero".
-       El origen de esa escala se coloca en la izquierda para que
-       cada barra crezca horizontalmente dentro de su propia columna.
+    parseFloat convierte cada valor textual en numero y al dividir
+    entre 100 lo dejamos listo para usar como proporcion.
   */
-  gsap.set(videoBlock, {
-    transformOrigin: "center center"
-  });
+  const rootStyles = getComputedStyle(document.documentElement);
+  const tvHole = {
+    left: parseFloat(rootStyles.getPropertyValue("--tv-hole-left")) / 100,
+    top: parseFloat(rootStyles.getPropertyValue("--tv-hole-top")) / 100,
+    width: parseFloat(rootStyles.getPropertyValue("--tv-hole-width")) / 100,
+    height: parseFloat(rootStyles.getPropertyValue("--tv-hole-height")) / 100
+  };
 
+  /*
+    En este punto, por ejemplo, tvHole.left no significa "43% del viewport",
+    sino "43% del ancho interno del SVG". La conversion al viewport ocurre
+    un bloque mas abajo, cuando ya sabemos cuanto ocupa realmente la tele.
+  */
+
+  /*
+    ----------------------------------------------------------
+    BLOQUE 5. CALCULO DE LA CAJA INICIAL DEL VIDEO
+    ----------------------------------------------------------
+
+    El SVG se comporta como una imagen "cover":
+    mantiene su proporcion pero puede sobresalir por los bordes.
+
+    Por eso no basta con usar porcentajes directamente sobre el viewport.
+    Primero medimos el marco visible de la tele y despues trasladamos
+    el rectangulo verde al sistema de coordenadas del contenedor pineado.
+  */
+  const getVideoRect = () => {
+    const frameRect = sceneFrame.getBoundingClientRect();
+    const pinRect = pinSection.getBoundingClientRect();
+
+    /*
+      frameRect:
+      describe el tamano y posicion reales del SVG ya escalado.
+
+      pinRect:
+      nos da el sistema de referencia en el que vive el video.
+
+      Restar ambos top/left convierte coordenadas de viewport
+      a coordenadas locales del contenedor pineado.
+    */
+    return {
+      top: frameRect.top - pinRect.top + frameRect.height * tvHole.top,
+      left: frameRect.left - pinRect.left + frameRect.width * tvHole.left,
+      width: frameRect.width * tvHole.width,
+      height: frameRect.height * tvHole.height
+    };
+  };
+
+  /*
+    ----------------------------------------------------------
+    BLOQUE 6. SINCRONIZACION VISUAL DEL VIDEO
+    ----------------------------------------------------------
+
+    Esta funcion coloca el bloque justo encima del hueco de la tele.
+
+    La llamamos:
+    - al iniciar la pagina
+    - cada vez que ScrollTrigger recalcula medidas
+
+    visibility: visible hace que el video aparezca solo cuando
+    ya tiene una posicion correcta y evita destellos desalineados.
+
+    Tambien reiniciamos aqui el aspecto visual de arranque.
+    Eso garantiza que, si el usuario redimensiona la ventana
+    o cambia la orientacion del dispositivo, el video vuelva
+    exactamente a su pantalla de la tele antes de seguir animando.
+  */
+  const setVideoToHole = () => {
+    const rect = getVideoRect();
+
+    gsap.set(videoBlock, {
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+      height: rect.height,
+      borderRadius: 0,
+      boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+      visibility: "visible"
+    });
+  };
+
+  /*
+    ----------------------------------------------------------
+    BLOQUE 7. ESTADO INICIAL DE LAS BARRAS
+    ----------------------------------------------------------
+
+    Cada barra arranca cerrada con scaleX(0) y crecera desde su
+    borde izquierdo cuando llegue su turno en la timeline.
+  */
   gsap.set(blackBars, {
     scaleX: 0,
     transformOrigin: "left center"
   });
 
+  setVideoToHole();
+
   /*
     ----------------------------------------------------------
-    BLOQUE 5. TIMELINE PRINCIPAL VINCULADO AL SCROLL
+    BLOQUE 8. TIMELINE PRINCIPAL VINCULADO AL SCROLL
     ----------------------------------------------------------
 
-    Este timeline contiene DOS fases consecutivas:
-
     FASE 1:
-    el video se expande desde su tamano pequeno inicial
-    hasta ocupar toda la pantalla.
+    el video pasa de la pantalla de la tele a fullscreen.
 
     FASE 2:
-    seis barras negras entran en secuencia de izquierda a derecha.
-
-    Ambas fases se gobiernan con el mismo scroll del usuario.
-    Eso se consigue porque:
-    - las dos animaciones estan dentro del mismo timeline
-    - ese timeline tiene un ScrollTrigger con scrub
-
-    Asi, el usuario "empuja" ambas transiciones con el scroll.
+    una vez completado ese fullscreen, entran las seis barras
+    negras en escalera hasta cerrar todo el viewport.
   */
-  gsap.timeline({
-    scrollTrigger: {
-      /*
-        trigger:
-        usamos la escena completa como referencia del comienzo del efecto.
-      */
-      trigger: ".escena",
-
-      /*
-        start: "top top"
-        significa:
-        el efecto arranca cuando el borde superior de la escena
-        coincide con el borde superior del viewport.
-      */
-      start: "top top",
-
-      /*
-        end: "+=220%"
-        reservamos un recorrido largo de scroll para repartir bien
-        las dos fases del timeline:
-    - expansion del video
-    - entrada escalonada de las barras negras
-
-        Al aumentar este valor, la transicion se siente mas progresiva.
-      */
-      end: "+=220%",
-
-      /*
-        scrub: 1.2
-        vincula el progreso del timeline al progreso del scroll
-        y anade una ligera amortiguacion.
-
-        Eso hace que el movimiento no responda de forma seca o brusca.
-      */
-      scrub: 1.2,
-
-      /*
-        pin: pinSection
-        fija visualmente la zona de la escena donde ocurre el efecto.
-
-        Gracias a esto:
-        - la pantalla no baja mostrando otra seccion
-        - el usuario siente que permanece dentro del mismo encuadre
-        - solo cambia el estado del video y, despues, el de las barras negras
-      */
-      pin: pinSection,
-
-      /*
-        anticipatePin reduce pequenos tirones al inicio del pin.
-        invalidateOnRefresh obliga a recalcular medidas al refrescar.
-      */
-      anticipatePin: 1,
-      invalidateOnRefresh: true
-    }
-  })
+  gsap
+    .timeline({
+      scrollTrigger: {
+        trigger: ".escena",
+        start: "top top",
+        end: "+=220%",
+        scrub: 1.2,
+        pin: pinSection,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        onRefreshInit: setVideoToHole
+      }
+    })
     .to(videoBlock, {
       /*
         --------------------------------------------------------
-        BLOQUE 6. FASE 1: EXPANSION DEL VIDEO
+        BLOQUE 9. FASE 1: FULLSCREEN DEL VIDEO
         --------------------------------------------------------
 
-        En esta primera mitad del timeline, el bloque de video:
-        - gana ancho hasta cubrir el viewport
-        - gana alto hasta cubrir el viewport
-        - pierde esquinas redondeadas
-        - pierde la sombra
-
-        El resultado es que deja de parecer una pieza flotante
-        y pasa a comportarse como un fondo completo.
-
-        duration: 1
-        no significa "1 segundo real". Dentro de un timeline con scrub,
-        duration funciona como proporcion interna del recorrido.
+        El bloque deja atras la pantalla de la tele y pasa a ocupar
+        toda la superficie visible del contenedor pineado.
       */
-      width: () => window.innerWidth,
-      height: () => window.innerHeight,
+      top: 0,
+      left: 0,
+      width: () => pinSection.clientWidth,
+      height: () => pinSection.clientHeight,
       borderRadius: 0,
       boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
       ease: "none",
       duration: 1
     })
-    .to(blackBars, {
-      /*
-        --------------------------------------------------------
-        BLOQUE 7. FASE 2: BARRAS NEGRAS EN ESCALERA
-        --------------------------------------------------------
+    .to(
+      blackBars,
+      {
+        /*
+          ------------------------------------------------------
+          BLOQUE 10. FASE 2: CIERRE EN ESCALERA
+          ------------------------------------------------------
 
-        Esta segunda animacion empieza cuando la expansion del video
-        ya ha terminado dentro del timeline.
-
-        El tercer parametro del tween es '+=0.14'.
-        Eso inserta una pequena pausa entre el fullscreen del video
-        y el comienzo de la secuencia de barras.
-
-        scaleX: 1
-        hace que cada barra pase de ancho visual cero
-        a su anchura completa.
-
-        Como todas comparten transformOrigin en la izquierda,
-        cada una nace desde su propio borde izquierdo.
-
-        stagger:
-        introduce un pequeno retraso entre barras para que entren
-        una detras de otra, de izquierda a derecha.
-      */
-      scaleX: 1,
-      ease: "none",
-      duration: 0.9,
-      stagger: 0.08
-    }, "+=0.14");
+          Cada barra cubre su sexta parte del viewport y entra con un
+          pequeno retraso respecto a la anterior para producir el cierre
+          de izquierda a derecha que querias conservar.
+        */
+        scaleX: 1,
+        ease: "none",
+        duration: 0.9,
+        stagger: 0.08
+      },
+      "+=0.14"
+    );
 
   /*
     ----------------------------------------------------------
-    BLOQUE 8. ADAPTACION A CAMBIOS DE TAMANO
+    BLOQUE 11. ADAPTACION A CAMBIOS DE TAMANO
     ----------------------------------------------------------
 
-    Como la fase de expansion usa window.innerWidth y window.innerHeight,
-    necesitamos refrescar ScrollTrigger si cambia el tamano de la ventana.
-
-    Eso obliga a recalcular:
-    - medidas
-    - puntos de inicio y fin
-    - valores dependientes del viewport
+    Si el viewport cambia, el SVG se recoloca y el hueco de la tele
+    cambia de posicion real en pantalla. ScrollTrigger.refresh()
+    obliga a recalcularlo todo.
   */
   window.addEventListener("resize", () => {
     ScrollTrigger.refresh();
@@ -229,11 +243,11 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 9. REFRESH INICIAL
+    BLOQUE 12. REFRESH INICIAL
     ----------------------------------------------------------
 
-    Ejecutamos un refresh inicial para que ScrollTrigger mida todo
-    correctamente antes de la primera interaccion del usuario.
+    Ejecutamos un refresh inicial para que ScrollTrigger mida
+    correctamente la escena antes de la primera interaccion.
   */
   ScrollTrigger.refresh();
 }
