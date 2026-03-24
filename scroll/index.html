@@ -9,12 +9,12 @@
       Este archivo HTML tiene una mision muy concreta:
       montar la estructura minima necesaria para crear un efecto visual
       donde un video nace dentro de la pantalla de una tele del asset
-      tracking_tv_def.svg, se expande progresivamente hasta ocupar
-      todo el viewport y, despues, queda cubierto por seis barras negras.
+      tracking_tv_def.svg, la composicion hace zoom hasta que ese video
+      ocupa el viewport y, despues, queda cubierto por seis barras negras.
 
       No hay texto, botones ni contenido adicional porque la intencion
       visual es que toda la atencion recaiga en el gesto del scroll
-      y en el crecimiento del video.
+      y en el acercamiento progresivo hacia su pantalla.
 
       meta charset="UTF-8":
       permite que el navegador interprete correctamente caracteres
@@ -71,7 +71,7 @@
       En otras palabras:
       - el usuario desplaza la rueda o arrastra con el dedo
       - ScrollTrigger mide cuanto ha avanzado ese scroll
-      - GSAP usa ese avance para agrandar el video poco a poco
+      - GSAP usa ese avance para acercar la composicion poco a poco
     -->
     <main class="escena">
       <!--
@@ -115,71 +115,88 @@
           Esa medicion es la que permite colocar el video exactamente
           donde el SVG marca el hueco verde de referencia.
         -->
-        <div class="tracking-marco" aria-hidden="true">
-          <img class="tracking-bg" src="./assets/tracking_tv_def.svg" alt="" />
+        <!--
+          --------------------------------------------------------
+          BLOQUE 5. ESCENA ESCALABLE DE TRACKING
+          --------------------------------------------------------
+
+          Este contenedor agrupa dos piezas que deben moverse juntas:
+          - la imagen de la tele
+          - el video colocado dentro de su pantalla
+
+          La razon de esta agrupacion es el cambio de enfoque que acabas
+          de pedir: ya no queremos que "crezca el video", sino que toda
+          la composicion haga zoom como si una camara se acercara.
+
+          Al animar este bloque completo, la tele y el video conservan
+          su relacion geometrica en todo momento.
+        -->
+        <div class="tracking-stage">
+          <div class="tracking-marco" aria-hidden="true">
+            <img class="tracking-bg" src="./assets/tracking_tv_def.svg" alt="" />
+          </div>
+
+          <!--
+            ------------------------------------------------------
+            BLOQUE 6. MARCO DEL VIDEO
+            ------------------------------------------------------
+
+            Este <section> ya no se anima hacia fullscreen por si mismo.
+            Ahora cumple otra funcion:
+            colocarse exactamente sobre la pantalla de la tele
+            para que, cuando la escena completa haga zoom,
+            el video llegue a fullscreen como consecuencia
+            del acercamiento del fondo.
+
+            JavaScript calcula esa caja usando las coordenadas reales
+            del asset. El proceso es este:
+            1. se leen los porcentajes medidos del hueco verde
+            2. se mide el tamano real del SVG ya escalado en pantalla
+            3. se traduce ese hueco al sistema de coordenadas visible
+
+            Asi, aunque el asset crezca o recorte por los bordes,
+            el video sigue alineado con su pantalla.
+          -->
+          <section class="bloque-video">
+            <!--
+              ----------------------------------------------------
+              BLOQUE 7. ETIQUETA VIDEO
+              ----------------------------------------------------
+
+              autoplay:
+              intenta reproducir el video automaticamente al cargar.
+
+              muted:
+              es esencial para que autoplay funcione en la mayoria
+              de navegadores actuales.
+
+              loop:
+              al llegar al final, el video vuelve a empezar.
+
+              playsinline:
+              evita que algunos moviles fuercen fullscreen nativo,
+              ya que aqui queremos controlar nosotros el efecto visual
+              dentro de la pagina.
+            -->
+            <video class="video-central" autoplay muted loop playsinline>
+              <!--
+                Fuente del archivo de video.
+                Si en el futuro cambias el archivo, normalmente bastaria
+                con sustituir esta ruta.
+              -->
+              <source src="./assets/video-1080p.mp4" type="video/mp4" />
+
+              <!--
+                Texto de respaldo por si el navegador no soporta <video>.
+              -->
+              Tu navegador no soporta la etiqueta de video.
+            </video>
+          </section>
         </div>
 
         <!--
           --------------------------------------------------------
-          BLOQUE 5. MARCO DEL VIDEO
-          --------------------------------------------------------
-
-          Este <section> sigue siendo el contenedor que animamos,
-          no la etiqueta <video> directamente.
-
-          La diferencia respecto a la version anterior es la posicion
-          de arranque:
-          ya no nace en el centro por CSS, sino en el hueco exacto
-          que la capa verde del SVG define como pantalla de la tele.
-
-          JavaScript calcula esa caja usando las coordenadas reales
-          del asset. El proceso es este:
-          1. se leen los porcentajes medidos del hueco verde
-          2. se mide el tamano real del SVG ya escalado en pantalla
-          3. se traduce ese hueco al sistema de coordenadas visible
-
-          Asi, aunque el asset crezca o recorte por los bordes,
-          el video sigue alineado con su pantalla.
-        -->
-        <section class="bloque-video">
-          <!--
-            ------------------------------------------------------
-            BLOQUE 6. ETIQUETA VIDEO
-            ------------------------------------------------------
-
-            autoplay:
-            intenta reproducir el video automaticamente al cargar.
-
-            muted:
-            es esencial para que autoplay funcione en la mayoria
-            de navegadores actuales.
-
-            loop:
-            al llegar al final, el video vuelve a empezar.
-
-            playsinline:
-            evita que algunos moviles fuercen fullscreen nativo,
-            ya que aqui queremos controlar nosotros el efecto visual
-            dentro de la pagina.
-          -->
-          <video class="video-central" autoplay muted loop playsinline>
-            <!--
-              Fuente del archivo de video.
-              Si en el futuro cambias el archivo, normalmente bastaria
-              con sustituir esta ruta.
-            -->
-            <source src="./assets/video-1080p.mp4" type="video/mp4" />
-
-            <!--
-              Texto de respaldo por si el navegador no soporta <video>.
-            -->
-            Tu navegador no soporta la etiqueta de video.
-          </video>
-        </section>
-
-        <!--
-          --------------------------------------------------------
-          BLOQUE 7. BARRAS NEGRAS EN ESCALERA
+          BLOQUE 8. BARRAS NEGRAS EN ESCALERA
           --------------------------------------------------------
 
           En lugar de una sola cortina negra, aqui usamos seis barras
@@ -206,7 +223,7 @@
 
     <!--
       ------------------------------------------------------------
-      BLOQUE 8. LIBRERIAS Y SCRIPT DEL PROYECTO
+      BLOQUE 9. LIBRERIAS Y SCRIPT DEL PROYECTO
       ------------------------------------------------------------
 
       GSAP:
@@ -215,7 +232,7 @@
 
       ScrollTrigger:
       es un plugin de GSAP que conecta una animacion con el scroll.
-      Gracias a el, el crecimiento del video ya no depende del tiempo,
+      Gracias a el, el acercamiento de la escena ya no depende del tiempo,
       sino del avance real del usuario.
 
       script.js:

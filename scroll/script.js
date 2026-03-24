@@ -3,26 +3,32 @@
   BLOQUE 1. REFERENCIAS A ELEMENTOS DEL DOM
   ------------------------------------------------------------
 
-  Necesitamos cuatro piezas para montar el efecto:
+  Necesitamos cinco piezas para montar el efecto:
 
   1. pinSection
      Es la zona que ScrollTrigger dejara fija mientras el usuario
      sigue avanzando con el scroll.
 
-  2. sceneFrame
+  2. trackingStage
+     Es la escena completa que contiene tele y video.
+     Este es ahora el elemento que animaremos para simular
+     un acercamiento de camara.
+
+  3. sceneFrame
      Es el contenedor que escala el SVG de la tele con proporcion fija.
      Gracias a el podemos medir donde cae realmente la pantalla
-     dentro del viewport.
+     dentro de la composicion.
 
-  3. videoBlock
-     Es el marco del video que arranca dentro del hueco de la tele
-     y luego se expande a fullscreen.
+  4. videoBlock
+     Es el marco del video que se coloca sobre el hueco exacto
+     de la pantalla de la tele.
 
-  4. blackBars
+  5. blackBars
      Son las seis barras verticales que cierran la escena
-     de izquierda a derecha cuando el video ya ha llenado la pantalla.
+     de izquierda a derecha cuando el zoom ya ha terminado.
 */
 const pinSection = document.querySelector(".escena__pin");
+const trackingStage = document.querySelector(".tracking-stage");
 const sceneFrame = document.querySelector(".tracking-marco");
 const videoBlock = document.querySelector(".bloque-video");
 const blackBars = Array.from(document.querySelectorAll(".barra-negra"));
@@ -41,6 +47,7 @@ const blackBars = Array.from(document.querySelectorAll(".barra-negra"));
 */
 if (
   !pinSection ||
+  !trackingStage ||
   !sceneFrame ||
   !videoBlock ||
   blackBars.length !== 6 ||
@@ -80,12 +87,12 @@ if (
   /*
     En este punto, por ejemplo, tvHole.left no significa "43% del viewport",
     sino "43% del ancho interno del SVG". La conversion al viewport ocurre
-    un bloque mas abajo, cuando ya sabemos cuanto ocupa realmente la tele.
+    mas abajo, cuando ya conocemos el tamano real de la tele en pantalla.
   */
 
   /*
     ----------------------------------------------------------
-    BLOQUE 5. CALCULO DE LA CAJA INICIAL DEL VIDEO
+    BLOQUE 5. CALCULO DE LA CAJA DEL VIDEO DENTRO DE LA ESCENA
     ----------------------------------------------------------
 
     El SVG se comporta como una imagen "cover":
@@ -93,25 +100,26 @@ if (
 
     Por eso no basta con usar porcentajes directamente sobre el viewport.
     Primero medimos el marco visible de la tele y despues trasladamos
-    el rectangulo verde al sistema de coordenadas del contenedor pineado.
+    el rectangulo verde al sistema de coordenadas de la escena escalable.
   */
   const getVideoRect = () => {
     const frameRect = sceneFrame.getBoundingClientRect();
-    const pinRect = pinSection.getBoundingClientRect();
+    const stageRect = trackingStage.getBoundingClientRect();
 
     /*
       frameRect:
       describe el tamano y posicion reales del SVG ya escalado.
 
-      pinRect:
-      nos da el sistema de referencia en el que vive el video.
+      stageRect:
+      nos da el sistema de referencia local de la escena que despues
+      vamos a ampliar con transform.
 
       Restar ambos top/left convierte coordenadas de viewport
-      a coordenadas locales del contenedor pineado.
+      a coordenadas internas de la composicion.
     */
     return {
-      top: frameRect.top - pinRect.top + frameRect.height * tvHole.top,
-      left: frameRect.left - pinRect.left + frameRect.width * tvHole.left,
+      top: frameRect.top - stageRect.top + frameRect.height * tvHole.top,
+      left: frameRect.left - stageRect.left + frameRect.width * tvHole.left,
       width: frameRect.width * tvHole.width,
       height: frameRect.height * tvHole.height
     };
@@ -119,10 +127,42 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 6. SINCRONIZACION VISUAL DEL VIDEO
+    BLOQUE 6. CALCULO DEL ZOOM OBJETIVO
     ----------------------------------------------------------
 
-    Esta funcion coloca el bloque justo encima del hueco de la tele.
+    Aqui convertimos el hueco del video en un destino de camara.
+
+    La idea es sencilla:
+    - medimos el tamano actual de la pantalla de la tele
+    - calculamos cuanto hay que escalar la escena para que esa pantalla
+      cubra todo el viewport
+    - calculamos el desplazamiento necesario para llevar su centro
+      al centro visible de la ventana
+
+    Usamos Math.max para que el video termine llenando la pantalla
+    aunque eso implique recortar un poco por uno de los ejes.
+  */
+  const getZoomTarget = (rect) => {
+    const pinWidth = pinSection.clientWidth;
+    const pinHeight = pinSection.clientHeight;
+    const scale = Math.max(pinWidth / rect.width, pinHeight / rect.height);
+
+    return {
+      scale,
+      x: (pinWidth - rect.width * scale) / 2 - rect.left * scale,
+      y: (pinHeight - rect.height * scale) / 2 - rect.top * scale
+    };
+  };
+
+  /*
+    ----------------------------------------------------------
+    BLOQUE 7. SINCRONIZACION DE LA ESCENA
+    ----------------------------------------------------------
+
+    Esta funcion deja la composicion en su estado base:
+    - escena sin zoom
+    - video colocado exactamente sobre la pantalla de la tele
+    - objetivo de zoom recalculado para el viewport actual
 
     La llamamos:
     - al iniciar la pagina
@@ -130,29 +170,32 @@ if (
 
     visibility: visible hace que el video aparezca solo cuando
     ya tiene una posicion correcta y evita destellos desalineados.
-
-    Tambien reiniciamos aqui el aspecto visual de arranque.
-    Eso garantiza que, si el usuario redimensiona la ventana
-    o cambia la orientacion del dispositivo, el video vuelva
-    exactamente a su pantalla de la tele antes de seguir animando.
   */
-  const setVideoToHole = () => {
+  let zoomTarget = { x: 0, y: 0, scale: 1 };
+
+  const syncTrackingScene = () => {
+    gsap.set(trackingStage, {
+      x: 0,
+      y: 0,
+      scale: 1,
+      transformOrigin: "top left"
+    });
+
     const rect = getVideoRect();
+    zoomTarget = getZoomTarget(rect);
 
     gsap.set(videoBlock, {
       top: rect.top,
       left: rect.left,
       width: rect.width,
       height: rect.height,
-      borderRadius: 0,
-      boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
       visibility: "visible"
     });
   };
 
   /*
     ----------------------------------------------------------
-    BLOQUE 7. ESTADO INICIAL DE LAS BARRAS
+    BLOQUE 8. ESTADO INICIAL DE LAS BARRAS
     ----------------------------------------------------------
 
     Cada barra arranca cerrada con scaleX(0) y crecera desde su
@@ -163,18 +206,20 @@ if (
     transformOrigin: "left center"
   });
 
-  setVideoToHole();
+  syncTrackingScene();
 
   /*
     ----------------------------------------------------------
-    BLOQUE 8. TIMELINE PRINCIPAL VINCULADO AL SCROLL
+    BLOQUE 9. TIMELINE PRINCIPAL VINCULADO AL SCROLL
     ----------------------------------------------------------
 
     FASE 1:
-    el video pasa de la pantalla de la tele a fullscreen.
+    en lugar de agrandar el video, hacemos zoom sobre toda la escena.
+    El resultado percibido es el de una camara acercandose
+    hasta que la pantalla de la tele termina ocupando el viewport.
 
     FASE 2:
-    una vez completado ese fullscreen, entran las seis barras
+    una vez completado ese acercamiento, entran las seis barras
     negras en escalera hasta cerrar todo el viewport.
   */
   gsap
@@ -187,24 +232,25 @@ if (
         pin: pinSection,
         anticipatePin: 1,
         invalidateOnRefresh: true,
-        onRefreshInit: setVideoToHole
+        onRefreshInit: syncTrackingScene
       }
     })
-    .to(videoBlock, {
+    .to(trackingStage, {
       /*
         --------------------------------------------------------
-        BLOQUE 9. FASE 1: FULLSCREEN DEL VIDEO
+        BLOQUE 10. FASE 1: ZOOM DE CAMARA
         --------------------------------------------------------
 
-        El bloque deja atras la pantalla de la tele y pasa a ocupar
-        toda la superficie visible del contenedor pineado.
+        El contenedor completo se escala y se desplaza.
+
+        Importante:
+        el video no cambia aqui su top, left, width ni height.
+        Lo que cambia es la camara virtual desde la que observamos
+        toda la composicion.
       */
-      top: 0,
-      left: 0,
-      width: () => pinSection.clientWidth,
-      height: () => pinSection.clientHeight,
-      borderRadius: 0,
-      boxShadow: "0 0 0 rgba(0, 0, 0, 0)",
+      x: () => zoomTarget.x,
+      y: () => zoomTarget.y,
+      scale: () => zoomTarget.scale,
       ease: "none",
       duration: 1
     })
@@ -213,7 +259,7 @@ if (
       {
         /*
           ------------------------------------------------------
-          BLOQUE 10. FASE 2: CIERRE EN ESCALERA
+          BLOQUE 11. FASE 2: CIERRE EN ESCALERA
           ------------------------------------------------------
 
           Cada barra cubre su sexta parte del viewport y entra con un
@@ -230,12 +276,14 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 11. ADAPTACION A CAMBIOS DE TAMANO
+    BLOQUE 12. ADAPTACION A CAMBIOS DE TAMANO
     ----------------------------------------------------------
 
-    Si el viewport cambia, el SVG se recoloca y el hueco de la tele
-    cambia de posicion real en pantalla. ScrollTrigger.refresh()
-    obliga a recalcularlo todo.
+    Si el viewport cambia, el SVG se recoloca, el hueco de la tele
+    cambia de posicion real en pantalla y tambien cambia el zoom
+    necesario para que el video termine llenando el viewport.
+
+    ScrollTrigger.refresh() obliga a recalcularlo todo.
   */
   window.addEventListener("resize", () => {
     ScrollTrigger.refresh();
@@ -243,7 +291,7 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 12. REFRESH INICIAL
+    BLOQUE 13. REFRESH INICIAL
     ----------------------------------------------------------
 
     Ejecutamos un refresh inicial para que ScrollTrigger mida

@@ -124,7 +124,33 @@ body {
 
 /*
   ------------------------------------------------------------
-  BLOQUE 5. COMPOSICION DE FONDO
+  BLOQUE 5. ESCENA ESCALABLE DE TRACKING
+  ------------------------------------------------------------
+
+  ".tracking-stage" es el contenedor que se animara durante el scroll.
+
+  En lugar de agrandar el video por separado, escalaremos esta escena
+  completa. Eso produce el efecto de "camara acercandose" porque:
+  - la tele crece
+  - el video crece con ella
+  - la alineacion entre ambas piezas nunca se rompe
+
+  transform-origin: top left:
+  simplifica mucho los calculos de JavaScript, porque nos permite
+  tratar la escena como un plano 2D cuya esquina superior izquierda
+  es el origen de coordenadas.
+*/
+.tracking-stage {
+  position: absolute;
+  inset: 0;
+  transform-origin: top left;
+  will-change: transform;
+  z-index: 1;
+}
+
+/*
+  ------------------------------------------------------------
+  BLOQUE 6. COMPOSICION DE FONDO
   ------------------------------------------------------------
 
   ".tracking-marco" es el lienzo que contiene la tele.
@@ -163,14 +189,18 @@ body {
 
 /*
   ------------------------------------------------------------
-  BLOQUE 6. BLOQUE DEL VIDEO
+  BLOQUE 7. BLOQUE DEL VIDEO
   ------------------------------------------------------------
 
   ".bloque-video" es el marco visible del video.
 
-  Sigue siendo el elemento que animamos, pero ya no se posiciona
-  desde CSS con un centrado generico. Su caja real se calcula
-  en JavaScript a partir del rectangulo verde del SVG.
+  Ya no es el protagonista de la animacion principal.
+  Su trabajo es quedarse anclado a la pantalla de la tele mientras
+  ".tracking-stage" es quien se escala.
+
+  Aun asi, sigue sin posicionarse con un centrado generico.
+  Su caja real se calcula en JavaScript a partir del rectangulo
+  verde del SVG.
 
   CSS lo deja en un estado neutro:
   - top y left a cero
@@ -202,7 +232,7 @@ body {
 
 /*
   ------------------------------------------------------------
-  BLOQUE 7. VIDEO INTERIOR
+  BLOQUE 8. VIDEO INTERIOR
   ------------------------------------------------------------
 
   La etiqueta <video> rellena completamente el bloque.
@@ -224,7 +254,7 @@ body {
 
 /*
   ------------------------------------------------------------
-  BLOQUE 8. BARRAS NEGRAS EN ESCALERA
+  BLOQUE 9. BARRAS NEGRAS EN ESCALERA
   ------------------------------------------------------------
 
   Esta capa agrupa seis barras verticales que se dibujan por encima
