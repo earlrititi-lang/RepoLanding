@@ -3,7 +3,7 @@
   BLOQUE 1. REFERENCIAS A ELEMENTOS DEL DOM
   ------------------------------------------------------------
 
-  Necesitamos nueve piezas para montar el efecto:
+  Necesitamos once piezas para montar el efecto:
 
   1. pinSection
      Es la zona que ScrollTrigger dejara fija mientras el usuario
@@ -38,7 +38,13 @@
      Es la primera pieza de la pista: scrollbarlateral.png.
 
   9. horizontalRingItem
-     Es la segunda pieza: scroll_ring_shadow.svg.
+     Es la segunda pieza: el ring que termina ocupando el viewport.
+
+  10. ringLight1
+      Es la primera capa luminosa superpuesta sobre el ring.
+
+  11. ringLight2
+      Es la segunda capa luminosa superpuesta sobre el ring.
 */
 const pinSection = document.querySelector(".escena__pin");
 const trackingStage = document.querySelector(".tracking-stage");
@@ -49,6 +55,8 @@ const horizontalStage = document.querySelector(".horizontal-stage");
 const horizontalTrack = document.querySelector(".horizontal-track");
 const horizontalBarItem = document.querySelector(".horizontal-item-bar");
 const horizontalRingItem = document.querySelector(".horizontal-item-ring");
+const ringLight1 = document.querySelector(".Luz1");
+const ringLight2 = document.querySelector(".Luz2");
 
 /*
   ------------------------------------------------------------
@@ -72,6 +80,8 @@ if (
   !horizontalTrack ||
   !horizontalBarItem ||
   !horizontalRingItem ||
+  !ringLight1 ||
+  !ringLight2 ||
   typeof gsap === "undefined" ||
   typeof ScrollTrigger === "undefined"
 ) {
@@ -83,6 +93,13 @@ if (
     ----------------------------------------------------------
 
     ScrollTrigger debe registrarse dentro de GSAP antes de usarlo.
+
+    Este paso es obligatorio porque GSAP no activa automaticamente
+    todos sus plugins. Al registrarlo aqui dejamos listo el motor
+    para:
+    - pinear la escena
+    - vincular la timeline al scroll
+    - recalcular medidas cuando cambie el viewport
   */
   gsap.registerPlugin(ScrollTrigger);
 
@@ -218,6 +235,14 @@ if (
   let horizontalTargetX = 0;
 
   const syncTrackingScene = () => {
+    /*
+      Primero devolvemos la composicion a su estado neutro.
+
+      Esto es importante porque las siguientes mediciones deben hacerse
+      sin arrastrar transforms de un refresh anterior. Si midieramos
+      la tele mientras ya esta ampliada, el calculo del hueco del video
+      quedaria contaminado.
+    */
     gsap.set(trackingStage, {
       x: 0,
       y: 0,
@@ -225,13 +250,28 @@ if (
       transformOrigin: "top left"
     });
 
+    /*
+      La fase horizontal tambien vuelve a su punto de partida:
+      - capa invisible
+      - pista sin desplazamiento acumulado
+
+      Asi cada refresh reconstruye la secuencia desde una base limpia.
+    */
     gsap.set(horizontalStage, { opacity: 0 });
     gsap.set(horizontalTrack, { x: 0 });
+    gsap.set([ringLight1, ringLight2], { autoAlpha: 1 });
 
     const rect = getVideoRect();
     zoomTarget = getZoomTarget(rect);
     horizontalTargetX = getHorizontalTarget();
 
+    /*
+      Solo cuando ya conocemos la caja exacta del hueco de la tele
+      hacemos visible el bloque de video.
+
+      Esto evita destellos mal colocados entre el primer render del DOM
+      y la primera medicion real de la composicion.
+    */
     gsap.set(videoBlock, {
       top: rect.top,
       left: rect.left,
@@ -272,18 +312,27 @@ if (
 
     FASE 3:
     cuando la pantalla ya es completamente negra, aparece una pista
-    horizontal. Primero entra scrollbarlateral.png y despues el ring.
+    horizontal. Primero entra scrollbarlateral.png y despues la
+    composicion completa del ring.
 
-    Conceptualmente esta fase se divide en tres micro-momentos:
+    FASE 4:
+    con el ring ya inmovil y encajado en el viewport,
+    la primera capa de luz pierde opacidad hasta desaparecer.
+
+    FASE 5:
+    a continuacion ocurre lo mismo con la segunda capa de luz.
+
+    Conceptualmente la parte final se divide en cuatro micro-momentos:
     - arranque del carril fuera de pantalla
     - cruce lateral de la panoramica
     - llegada final del ring al centro del viewport
+    - apagado secuencial de las dos luces
   */
   const mainTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".escena",
       start: "top top",
-      end: "+=520%",
+      end: "+=620%",
       scrub: 1.2,
       pin: pinSection,
       anticipatePin: 1,
@@ -356,7 +405,8 @@ if (
       --------------------------------------------------------
 
       La pista se desplaza hacia la izquierda.
-      Primero entra scrollbarlateral.png y despues scroll_ring_shadow.svg.
+      Primero entra scrollbarlateral.png y despues el conjunto del ring
+      formado por su base y sus dos capas de luz.
 
       No centramos la pista completa, sino la segunda pieza.
       Por eso el target se calcula con getHorizontalTarget():
@@ -369,18 +419,40 @@ if (
   });
 
   /*
-    Este pequeno tramo no mueve nada nuevo.
-    Solo reserva una porcion adicional de scroll para que,
-    una vez el ring ya ha llegado, el encuadre permanezca fijo
-    antes de pasar a la siguiente fase.
+    ----------------------------------------------------------
+    BLOQUE 15. FASE 4: APAGADO DE LA PRIMERA LUZ
+    ----------------------------------------------------------
+
+    En este punto la pista ya no se mueve: el ring se queda fijo
+    y empezamos a actuar solo sobre su primera capa luminosa.
+
+    Usamos autoAlpha para que la capa no solo se vuelva transparente,
+    sino que tambien termine con visibility: hidden cuando alcance cero.
   */
-  mainTimeline.to({}, {
-    duration: 0.35
+  mainTimeline.to(ringLight1, {
+    autoAlpha: 0,
+    ease: "none",
+    duration: 0.45
   });
 
   /*
     ----------------------------------------------------------
-    BLOQUE 15. ADAPTACION A CAMBIOS DE TAMANO
+    BLOQUE 16. FASE 5: APAGADO DE LA SEGUNDA LUZ
+    ----------------------------------------------------------
+
+    Cuando la primera luz ya ha desaparecido, repetimos exactamente
+    la misma idea con la segunda. Asi el ring pierde brillo
+    en dos pasos diferenciados y legibles durante el scroll.
+  */
+  mainTimeline.to(ringLight2, {
+    autoAlpha: 0,
+    ease: "none",
+    duration: 0.45
+  });
+
+  /*
+    ----------------------------------------------------------
+    BLOQUE 17. ADAPTACION A CAMBIOS DE TAMANO
     ----------------------------------------------------------
 
     Si el viewport cambia, el SVG se recoloca, el hueco de la tele
@@ -395,17 +467,7 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 16. BLOQUEO ACTUAL DE LAS CAPAS DE LUZ
-    ----------------------------------------------------------
-
-    La bajada de opacidad de "LUZ 1" y "LUZ 2" queda pendiente porque
-    scroll_ring_shadow.svg esta aplanado en una sola imagen y no expone
-    esas capas como nodos SVG separados.
-  */
-
-  /*
-    ----------------------------------------------------------
-    BLOQUE 17. REFRESH INICIAL
+    BLOQUE 18. REFRESH INICIAL
     ----------------------------------------------------------
 
     Ejecutamos un refresh inicial para que ScrollTrigger mida

@@ -77,13 +77,15 @@ body {
   ".escena" es el contenedor superior del efecto.
 
   Lo mas importante aqui no es su aspecto, sino su altura:
-  min-height: 360vh.
+  min-height: 620vh.
 
   ¿Por que 360vh y no 100vh?
-  Porque ahora tenemos tres fases distintas dentro del mismo pin:
+  Porque ahora tenemos cinco fases distintas dentro del mismo pin:
   - zoom sobre la tele
   - cierre negro con seis barras
   - entrada horizontal del siguiente asset
+  - apagado progresivo de la luz 1 del ring
+  - apagado progresivo de la luz 2 del ring
 
   Ese recorrido adicional permite que ScrollTrigger convierta la distancia
   recorrida por el usuario en progreso de animacion.
@@ -93,7 +95,7 @@ body {
 */
 .escena {
   position: relative;
-  min-height: 520vh;
+  min-height: 620vh;
 }
 
 /*
@@ -156,20 +158,29 @@ body {
   BLOQUE 6. COMPOSICION DE FONDO
   ------------------------------------------------------------
 
-  ".tracking-marco" es el lienzo que contiene la tele.
+  ".tracking-marco" es el lienzo que contiene la tele y aqui aplicamos
+  el patron general para ajustar una imagen al viewport sin deformarla.
 
-  Lo hacemos mas grande o mas pequeno segun sea necesario para cubrir
-  el viewport entero sin deformar el asset.
+  La idea es reproducir el comportamiento de "background-size: cover"
+  pero sobre un elemento real del DOM que luego sirve como referencia
+  para colocar el video encima.
 
-  width: max(...):
-  replica el comportamiento de "cover", pero en un contenedor
-  que mantiene una proporcion fija. Asi la imagen puede desbordar
-  por arriba o por los lados si hace falta, pero siempre permanece
-  alineada con el video porque ambos usan la misma referencia.
+  Como funciona:
+  1. "aspect-ratio" fija la proporcion original del asset.
+  2. "width: max(100vw, calc(100vh * ratio))" obliga al marco a medir,
+     como minimo, lo suficiente para cubrir todo el ancho o todo el alto
+     del viewport, segun cual de las dos dimensiones exija mas espacio.
+  3. Al centrarlo con "top/left: 50%" y "translate(-50%, -50%)",
+     cualquier exceso queda repartido por los lados, exactamente igual
+     que haria un "cover".
 
-  En la practica, este elemento actua como una "mesa de coordenadas":
+  Resultado:
+  el asset puede sobresalir por arriba o por los laterales, pero nunca
+  deja huecos vacios y conserva su proporcion original.
+
+  En la practica, este elemento tambien actua como "mesa de coordenadas":
   el SVG se escala aqui y el video calcula su posicion tomando este
-  marco como origen.
+  mismo marco como origen.
 */
 .tracking-marco {
   position: absolute;
@@ -182,7 +193,20 @@ body {
 }
 
 /*
-  La imagen ocupa todo el marco y hereda su proporcion exacta.
+  ".tracking-bg" es la imagen real del asset de la tele.
+
+  Aqui no repetimos ninguna logica complicada porque el trabajo
+  importante ya lo ha hecho ".tracking-marco".
+
+  width: 100% y height: 100%:
+  hacen que la imagen rellene por completo ese marco tecnico.
+
+  Dicho de otra forma:
+  - ".tracking-marco" decide cuanto debe medir el asset para cubrir
+    el viewport
+  - ".tracking-bg" simplemente se adapta a ese marco
+
+  Si el contenedor ya se comporta como "cover", la imagen tambien.
 */
 .tracking-bg {
   display: block;
@@ -283,6 +307,20 @@ body {
   z-index: 3;
 }
 
+/*
+  ".barra-negra" define el comportamiento comun de las seis columnas.
+
+  Todas comparten las mismas reglas base:
+  - ocupan toda la altura del viewport pineado
+  - nacen cerradas con scaleX(0)
+  - se abren desde el borde izquierdo para que el barrido
+    se lea claramente de izquierda a derecha
+
+  width: calc(100% / 6 + 1px):
+  reparte el ancho en seis partes y anade un pequeno solape.
+  Ese pixel extra evita costuras finas entre columnas por
+  redondeos subpixel durante la animacion.
+*/
 .barra-negra {
   position: absolute;
   top: 0;
@@ -349,7 +387,7 @@ body {
   Como los elementos estan colocados en fila dentro de un flex,
   al desplazar la pista en X se obtiene una lectura natural:
   - primero aparece scrollbarlateral.png
-  - despues aparece scroll_ring_shadow.svg
+  - despues aparece el ring con sus capas de luz superpuestas
 */
 .horizontal-track {
   position: absolute;
@@ -380,6 +418,13 @@ body {
   width: calc(100vh * 3.5555555556);
 }
 
+/*
+  La panoramica rellena completamente su caja.
+
+  object-fit: cover mantiene el asset sin deformarlo y permite
+  que, si la proporcion del archivo no coincide exactamente con
+  la de su caja visible, solo se recorten los sobrantes laterales.
+*/
 .horizontal-bar {
   display: block;
   width: 100%;
@@ -387,20 +432,48 @@ body {
   object-fit: cover;
 }
 
+/*
+  La segunda pieza del carril esta dimensionada para ocupar
+  una caja equivalente al viewport.
+
+  Eso simplifica la ultima parte de la secuencia:
+  cuando esta pieza llega al centro, ya se percibe como
+  una imagen a pantalla completa sin tener que escalarla aparte.
+*/
 .horizontal-item-ring {
+  position: relative;
   width: 100vw;
+  overflow: hidden;
 }
 
 /*
-  El ring final ocupa una caja del tamano del viewport.
+  El ring base y las dos capas de luz ocupan exactamente
+  la misma caja y se apilan una encima de otra.
 
-  Gracias a eso, cuando la pista termina su recorrido,
-  el ultimo fotograma de la fase lateral queda "encajado"
-  a pantalla completa sin tener que escalar ese asset aparte.
+  Gracias a esta superposicion:
+  - las tres imagenes comparten el mismo encuadre
+  - las luces pueden perder opacidad sin mover el asset base
+  - el ultimo fotograma sigue quedando encajado a pantalla completa
 */
-.horizontal-ring {
+.horizontal-ring,
+.Luz1,
+.Luz2 {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.horizontal-ring {
+  z-index: 1;
+}
+
+.Luz1 {
+  z-index: 2;
+}
+
+.Luz2 {
+  z-index: 3;
 }

@@ -32,8 +32,14 @@
 
     <!--
       Titulo de la pestana del navegador.
-      No afecta al efecto visual, pero forma parte de la configuracion
-      minima correcta de cualquier documento HTML.
+
+      No participa en la animacion ni en los calculos del scroll,
+      pero sigue siendo parte de la estructura minima correcta
+      de cualquier documento HTML:
+      - identifica la pagina en la pestana del navegador
+      - ayuda a distinguir esta escena de otras pruebas abiertas
+      - mantiene el archivo en un estado presentable aunque aqui
+        estemos construyendo una pieza muy visual y sin interfaz clasica
     -->
     <title>Estructura base</title>
 
@@ -182,14 +188,24 @@
             -->
             <video class="video-central" autoplay muted loop playsinline>
               <!--
-                Fuente del archivo de video.
-                Si en el futuro cambias el archivo, normalmente bastaria
-                con sustituir esta ruta.
+                Fuente real del contenido audiovisual.
+
+                Esta etiqueta se deja separada de <video> por dos razones:
+                1. permite declarar explicitamente el tipo MIME
+                2. facilita cambiar el archivo en el futuro sin tocar
+                   el resto de atributos del reproductor
+
+                Mientras la animacion siga usando el mismo formato,
+                normalmente bastara con sustituir esta ruta.
               -->
               <source src="./assets/video-1080p.mp4" type="video/mp4" />
 
               <!--
                 Texto de respaldo por si el navegador no soporta <video>.
+
+                En navegadores modernos casi nunca se mostrara,
+                pero sigue siendo una buena practica porque deja un
+                mensaje legible en lugar de un contenedor vacio.
               -->
               Tu navegador no soporta la etiqueta de video.
             </video>
@@ -236,7 +252,7 @@
 
           Orden del carril lateral:
           1. scrollbarlateral.png
-          2. scroll_ring_shadow.svg
+          2. ring base + luces superpuestas
 
           JavaScript no anima cada pieza por separado.
           Lo que se mueve es la pista completa en el eje X.
@@ -244,22 +260,55 @@
           Eso hace que:
           - primero cruce la panoramica
           - despues entre el ring
-          - y el scroll lateral termine cuando el ring queda alineado
-            con el viewport
+          - el ring quede fijo ocupando el viewport
+          - y, ya inmovil, sus dos capas de luz se apaguen
+            de forma secuencial
         -->
         <div class="horizontal-stage" aria-hidden="true">
           <div class="horizontal-track">
             <figure class="horizontal-item horizontal-item-bar">
+              <!--
+                Primera pieza del carril lateral.
+
+                Es una panoramica larga que entra antes que el ring para
+                que la fase horizontal no arranque de golpe con el asset
+                final, sino con un recorrido previo que prepare la entrada.
+              -->
               <img
                 class="horizontal-bar"
                 src="./assets/scrollbarlateral.png"
-                alt=""
               />
             </figure>
             <figure class="horizontal-item horizontal-item-ring">
+              <!--
+                Segunda pieza del carril lateral.
+
+                Este es el asset que termina ocupando el viewport cuando
+                el desplazamiento horizontal concluye. Por eso su caja
+                esta pensada para encajar exactamente a tamano pantalla.
+
+                Aqui ya no usamos una sola imagen:
+                - la base del ring
+                - la capa de luz 1
+                - la capa de luz 2
+
+                Las tres comparten la misma caja para que queden
+                perfectamente superpuestas y JavaScript pueda bajar
+                la opacidad de las dos luces por separado.
+              -->
               <img
                 class="horizontal-ring"
-                src="./assets/scroll_ring_shadow.svg"
+                src="./assets/scroll_ring_shadow_def.svg"
+                alt=""
+              />
+              <img
+                class="Luz1"
+                src="./assets/Luz1_Ring.png"
+                alt=""
+              />
+              <img
+                class="Luz2"
+                src="./assets/Luz2_Ring.png"
                 alt=""
               />
             </figure>
