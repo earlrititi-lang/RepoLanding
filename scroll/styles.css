@@ -77,20 +77,23 @@ body {
   ".escena" es el contenedor superior del efecto.
 
   Lo mas importante aqui no es su aspecto, sino su altura:
-  min-height: 220vh.
+  min-height: 360vh.
 
-  ¿Por que 220vh y no 100vh?
-  Porque necesitamos mas recorrido de scroll del que ofrece una sola pantalla.
+  ¿Por que 360vh y no 100vh?
+  Porque ahora tenemos tres fases distintas dentro del mismo pin:
+  - zoom sobre la tele
+  - cierre negro con seis barras
+  - entrada horizontal del siguiente asset
 
   Ese recorrido adicional permite que ScrollTrigger convierta la distancia
   recorrida por el usuario en progreso de animacion.
 
-  Si la escena midiera solo 100vh, el video apenas tendria tiempo
-  de expandirse de forma gradual.
+  Si la escena midiera solo 100vh, toda la secuencia ocurriria
+  demasiado deprisa.
 */
 .escena {
   position: relative;
-  min-height: 220vh;
+  min-height: 520vh;
 }
 
 /*
@@ -313,4 +316,91 @@ body {
 
 .barra-negra-6 {
   left: 83.3335%;
+}
+
+/*
+  ------------------------------------------------------------
+  BLOQUE 10. ESCENA HORIZONTAL
+  ------------------------------------------------------------
+
+  Esta capa vive por encima del cierre de barras, pero arranca invisible.
+
+  Su fondo tambien es negro para que la transicion sea continua:
+  cuando termina la cortina de seis columnas, no se percibe un corte,
+  solo empieza a entrar el nuevo contenido lateral.
+*/
+.horizontal-stage {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background-color: #000000;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 4;
+}
+
+/*
+  La pista es mas ancha que la ventana y arranca con un gran padding
+  izquierdo. Eso deja todo el carril fuera del viewport al comienzo.
+
+  La clave del efecto lateral es esta:
+  no movemos cada asset por separado, sino toda la pista completa.
+
+  Como los elementos estan colocados en fila dentro de un flex,
+  al desplazar la pista en X se obtiene una lectura natural:
+  - primero aparece scrollbarlateral.png
+  - despues aparece scroll_ring_shadow.svg
+*/
+.horizontal-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  display: flex;
+  align-items: stretch;
+  gap: 6vw;
+  padding: 0 100vw;
+  will-change: transform;
+}
+
+.horizontal-item {
+  position: relative;
+  flex: 0 0 auto;
+  height: 100%;
+}
+
+/*
+  La primera pieza es panoramica y por eso su ancho depende
+  directamente de la altura del viewport.
+
+  Asi conseguimos que cruce en horizontal con una presencia
+  claramente mas larga antes de que llegue el ring.
+*/
+.horizontal-item-bar {
+  width: calc(100vh * 3.5555555556);
+}
+
+.horizontal-bar {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.horizontal-item-ring {
+  width: 100vw;
+}
+
+/*
+  El ring final ocupa una caja del tamano del viewport.
+
+  Gracias a eso, cuando la pista termina su recorrido,
+  el ultimo fotograma de la fase lateral queda "encajado"
+  a pantalla completa sin tener que escalar ese asset aparte.
+*/
+.horizontal-ring {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }

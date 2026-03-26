@@ -3,7 +3,7 @@
   BLOQUE 1. REFERENCIAS A ELEMENTOS DEL DOM
   ------------------------------------------------------------
 
-  Necesitamos cinco piezas para montar el efecto:
+  Necesitamos nueve piezas para montar el efecto:
 
   1. pinSection
      Es la zona que ScrollTrigger dejara fija mientras el usuario
@@ -26,12 +26,29 @@
   5. blackBars
      Son las seis barras verticales que cierran la escena
      de izquierda a derecha cuando el zoom ya ha terminado.
+
+  6. horizontalStage
+     Es la capa negra que aparece despues del cierre completo.
+
+  7. horizontalTrack
+     Es la pista mas ancha que el viewport que moveremos en X
+     para simular el scroll lateral.
+
+  8. horizontalBarItem
+     Es la primera pieza de la pista: scrollbarlateral.png.
+
+  9. horizontalRingItem
+     Es la segunda pieza: scroll_ring_shadow.svg.
 */
 const pinSection = document.querySelector(".escena__pin");
 const trackingStage = document.querySelector(".tracking-stage");
 const sceneFrame = document.querySelector(".tracking-marco");
 const videoBlock = document.querySelector(".bloque-video");
 const blackBars = Array.from(document.querySelectorAll(".barra-negra"));
+const horizontalStage = document.querySelector(".horizontal-stage");
+const horizontalTrack = document.querySelector(".horizontal-track");
+const horizontalBarItem = document.querySelector(".horizontal-item-bar");
+const horizontalRingItem = document.querySelector(".horizontal-item-ring");
 
 /*
   ------------------------------------------------------------
@@ -51,6 +68,10 @@ if (
   !sceneFrame ||
   !videoBlock ||
   blackBars.length !== 6 ||
+  !horizontalStage ||
+  !horizontalTrack ||
+  !horizontalBarItem ||
+  !horizontalRingItem ||
   typeof gsap === "undefined" ||
   typeof ScrollTrigger === "undefined"
 ) {
@@ -156,7 +177,29 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 7. SINCRONIZACION DE LA ESCENA
+    BLOQUE 7. CALCULO DEL DESPLAZAMIENTO HORIZONTAL
+    ----------------------------------------------------------
+
+    La pista horizontal arranca fuera del viewport gracias al
+    padding-left grande definido en CSS.
+
+    Ese detalle es importante porque el usuario no ve "dos animaciones":
+    ve un solo carril que cruza de derecha a izquierda.
+
+    Aqui calculamos cuanto hay que mover esa pista para que el ring,
+    que es la segunda pieza del carril, termine centrado en pantalla
+    cuando el usuario complete esta fase.
+  */
+  const getHorizontalTarget = () => {
+    const stageRect = horizontalStage.getBoundingClientRect();
+    const itemRect = horizontalRingItem.getBoundingClientRect();
+
+    return (stageRect.width - itemRect.width) / 2 - (itemRect.left - stageRect.left);
+  };
+
+  /*
+    ----------------------------------------------------------
+    BLOQUE 8. SINCRONIZACION DE LA ESCENA
     ----------------------------------------------------------
 
     Esta funcion deja la composicion en su estado base:
@@ -172,6 +215,7 @@ if (
     ya tiene una posicion correcta y evita destellos desalineados.
   */
   let zoomTarget = { x: 0, y: 0, scale: 1 };
+  let horizontalTargetX = 0;
 
   const syncTrackingScene = () => {
     gsap.set(trackingStage, {
@@ -181,8 +225,12 @@ if (
       transformOrigin: "top left"
     });
 
+    gsap.set(horizontalStage, { opacity: 0 });
+    gsap.set(horizontalTrack, { x: 0 });
+
     const rect = getVideoRect();
     zoomTarget = getZoomTarget(rect);
+    horizontalTargetX = getHorizontalTarget();
 
     gsap.set(videoBlock, {
       top: rect.top,
@@ -195,7 +243,7 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 8. ESTADO INICIAL DE LAS BARRAS
+    BLOQUE 9. ESTADO INICIAL DE LAS BARRAS
     ----------------------------------------------------------
 
     Cada barra arranca cerrada con scaleX(0) y crecera desde su
@@ -210,7 +258,7 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 9. TIMELINE PRINCIPAL VINCULADO AL SCROLL
+    BLOQUE 10. TIMELINE PRINCIPAL VINCULADO AL SCROLL
     ----------------------------------------------------------
 
     FASE 1:
@@ -221,62 +269,118 @@ if (
     FASE 2:
     una vez completado ese acercamiento, entran las seis barras
     negras en escalera hasta cerrar todo el viewport.
+
+    FASE 3:
+    cuando la pantalla ya es completamente negra, aparece una pista
+    horizontal. Primero entra scrollbarlateral.png y despues el ring.
+
+    Conceptualmente esta fase se divide en tres micro-momentos:
+    - arranque del carril fuera de pantalla
+    - cruce lateral de la panoramica
+    - llegada final del ring al centro del viewport
   */
-  gsap
-    .timeline({
-      scrollTrigger: {
-        trigger: ".escena",
-        start: "top top",
-        end: "+=220%",
-        scrub: 1.2,
-        pin: pinSection,
-        anticipatePin: 1,
-        invalidateOnRefresh: true,
-        onRefreshInit: syncTrackingScene
-      }
-    })
-    .to(trackingStage, {
+  const mainTimeline = gsap.timeline({
+    scrollTrigger: {
+      trigger: ".escena",
+      start: "top top",
+      end: "+=520%",
+      scrub: 1.2,
+      pin: pinSection,
+      anticipatePin: 1,
+      invalidateOnRefresh: true,
+      onRefreshInit: syncTrackingScene
+    }
+  });
+
+  mainTimeline.to(trackingStage, {
+    /*
+      --------------------------------------------------------
+      BLOQUE 11. FASE 1: ZOOM DE CAMARA
+      --------------------------------------------------------
+
+      El contenedor completo se escala y se desplaza.
+
+      Importante:
+      el video no cambia aqui su top, left, width ni height.
+      Lo que cambia es la camara virtual desde la que observamos
+      toda la composicion.
+    */
+    x: () => zoomTarget.x,
+    y: () => zoomTarget.y,
+    scale: () => zoomTarget.scale,
+    ease: "none",
+    duration: 1
+  });
+
+  mainTimeline.to(
+    blackBars,
+    {
       /*
-        --------------------------------------------------------
-        BLOQUE 10. FASE 1: ZOOM DE CAMARA
-        --------------------------------------------------------
+        ------------------------------------------------------
+        BLOQUE 12. FASE 2: CIERRE EN ESCALERA
+        ------------------------------------------------------
 
-        El contenedor completo se escala y se desplaza.
-
-        Importante:
-        el video no cambia aqui su top, left, width ni height.
-        Lo que cambia es la camara virtual desde la que observamos
-        toda la composicion.
+        Cada barra cubre su sexta parte del viewport y entra con un
+        pequeno retraso respecto a la anterior para producir el cierre
+        de izquierda a derecha que querias conservar.
       */
-      x: () => zoomTarget.x,
-      y: () => zoomTarget.y,
-      scale: () => zoomTarget.scale,
+      scaleX: 1,
       ease: "none",
-      duration: 1
-    })
-    .to(
-      blackBars,
-      {
-        /*
-          ------------------------------------------------------
-          BLOQUE 11. FASE 2: CIERRE EN ESCALERA
-          ------------------------------------------------------
+      duration: 0.9,
+      stagger: 0.08
+    },
+    "+=0.14"
+  );
 
-          Cada barra cubre su sexta parte del viewport y entra con un
-          pequeno retraso respecto a la anterior para producir el cierre
-          de izquierda a derecha que querias conservar.
-        */
-        scaleX: 1,
-        ease: "none",
-        duration: 0.9,
-        stagger: 0.08
-      },
-      "+=0.14"
-    );
+  mainTimeline.set(
+    horizontalStage,
+    {
+      /*
+        ------------------------------------------------------
+        BLOQUE 13. APERTURA DE LA CAPA HORIZONTAL
+        ------------------------------------------------------
+
+        En cuanto el negro ya cubre todo, activamos la nueva capa.
+        Como su fondo tambien es negro, el cambio es visualmente
+        continuo y solo se percibe la entrada del carril lateral.
+      */
+      opacity: 1
+    },
+    ">"
+  );
+
+  mainTimeline.to(horizontalTrack, {
+    /*
+      --------------------------------------------------------
+      BLOQUE 14. FASE 3: ENTRADA HORIZONTAL
+      --------------------------------------------------------
+
+      La pista se desplaza hacia la izquierda.
+      Primero entra scrollbarlateral.png y despues scroll_ring_shadow.svg.
+
+      No centramos la pista completa, sino la segunda pieza.
+      Por eso el target se calcula con getHorizontalTarget():
+      el scroll lateral termina exactamente cuando el ring queda
+      encajado en el viewport.
+    */
+    x: () => horizontalTargetX,
+    ease: "none",
+    duration: 1.6
+  });
+
+  /*
+    Este pequeno tramo no mueve nada nuevo.
+    Solo reserva una porcion adicional de scroll para que,
+    una vez el ring ya ha llegado, el encuadre permanezca fijo
+    antes de pasar a la siguiente fase.
+  */
+  mainTimeline.to({}, {
+    duration: 0.35
+  });
 
   /*
     ----------------------------------------------------------
-    BLOQUE 12. ADAPTACION A CAMBIOS DE TAMANO
+    BLOQUE 15. ADAPTACION A CAMBIOS DE TAMANO
     ----------------------------------------------------------
 
     Si el viewport cambia, el SVG se recoloca, el hueco de la tele
@@ -291,7 +395,17 @@ if (
 
   /*
     ----------------------------------------------------------
-    BLOQUE 13. REFRESH INICIAL
+    BLOQUE 16. BLOQUEO ACTUAL DE LAS CAPAS DE LUZ
+    ----------------------------------------------------------
+
+    La bajada de opacidad de "LUZ 1" y "LUZ 2" queda pendiente porque
+    scroll_ring_shadow.svg esta aplanado en una sola imagen y no expone
+    esas capas como nodos SVG separados.
+  */
+
+  /*
+    ----------------------------------------------------------
+    BLOQUE 17. REFRESH INICIAL
     ----------------------------------------------------------
 
     Ejecutamos un refresh inicial para que ScrollTrigger mida

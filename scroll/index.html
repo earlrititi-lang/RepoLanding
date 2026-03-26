@@ -10,7 +10,8 @@
       montar la estructura minima necesaria para crear un efecto visual
       donde un video nace dentro de la pantalla de una tele del asset
       tracking_tv_def.svg, la composicion hace zoom hasta que ese video
-      ocupa el viewport y, despues, queda cubierto por seis barras negras.
+      ocupa el viewport, queda cubierto por seis barras negras y,
+      a continuacion, da paso a un desplazamiento horizontal.
 
       No hay texto, botones ni contenido adicional porque la intencion
       visual es que toda la atencion recaiga en el gesto del scroll
@@ -44,6 +45,7 @@
       - la composicion de fondo de la tele
       - el bloque de video que nace dentro del hueco verde del SVG
       - la capa final de barras negras
+      - la escena horizontal que entra despues del negro completo
 
       El CSS prepara la escena; luego JavaScript y GSAP se encargan
       de animarla.
@@ -62,7 +64,7 @@
       tambien crea un recorrido de scroll artificialmente largo.
 
       ¿Por que necesitamos eso?
-      Porque el crecimiento del video ya no sucede por tiempo
+      Porque toda la secuencia ya no sucede por tiempo
       como en la version anterior de los 3 segundos, sino por scroll.
 
       Eso significa que necesitamos "distancia de scroll" para convertirla
@@ -218,12 +220,57 @@
           <span class="barra-negra barra-negra-5"></span>
           <span class="barra-negra barra-negra-6"></span>
         </div>
+
+        <!--
+          --------------------------------------------------------
+          BLOQUE 9. ESCENA HORIZONTAL
+          --------------------------------------------------------
+
+          Esta capa aparece despues de que las seis barras hayan dejado
+          la pantalla completamente negra.
+
+          En vez de cambiar a otra pagina o a otra seccion visible,
+          seguimos dentro de la misma escena pineada y anadimos
+          una "pista" horizontal por la que entran dos piezas seguidas
+          desde la derecha.
+
+          Orden del carril lateral:
+          1. scrollbarlateral.png
+          2. scroll_ring_shadow.svg
+
+          JavaScript no anima cada pieza por separado.
+          Lo que se mueve es la pista completa en el eje X.
+
+          Eso hace que:
+          - primero cruce la panoramica
+          - despues entre el ring
+          - y el scroll lateral termine cuando el ring queda alineado
+            con el viewport
+        -->
+        <div class="horizontal-stage" aria-hidden="true">
+          <div class="horizontal-track">
+            <figure class="horizontal-item horizontal-item-bar">
+              <img
+                class="horizontal-bar"
+                src="./assets/scrollbarlateral.png"
+                alt=""
+              />
+            </figure>
+            <figure class="horizontal-item horizontal-item-ring">
+              <img
+                class="horizontal-ring"
+                src="./assets/scroll_ring_shadow.svg"
+                alt=""
+              />
+            </figure>
+          </div>
+        </div>
       </div>
     </main>
 
     <!--
       ------------------------------------------------------------
-      BLOQUE 9. LIBRERIAS Y SCRIPT DEL PROYECTO
+      BLOQUE 10. LIBRERIAS Y SCRIPT DEL PROYECTO
       ------------------------------------------------------------
 
       GSAP:
