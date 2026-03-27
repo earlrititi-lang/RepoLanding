@@ -99,6 +99,18 @@ body {
 }
 
 /*
+  Lectura practica de ".escena":
+
+  - no es la capa visible del efecto, sino su contenedor de recorrido
+  - su altura extra existe para "dar tiempo" al scroll
+  - su position: relative no mueve nada, pero deja preparado un contexto
+    estable para hijos y futuras ampliaciones del layout
+
+  Si este bloque fuera demasiado bajo, la timeline tendria que comprimir
+  muchas fases en poco recorrido y la animacion se sentiria brusca.
+*/
+
+/*
   ------------------------------------------------------------
   BLOQUE 4. ZONA PINEADA
   ------------------------------------------------------------
@@ -128,6 +140,21 @@ body {
 }
 
 /*
+  Lectura practica de ".escena__pin":
+
+  Este es el "marco de camara" real del proyecto.
+  Todo lo importante se dibuja dentro de esta caja.
+
+  - position: relative crea el sistema de coordenadas local
+    para todas las capas absolutas del efecto
+  - overflow: hidden recorta cualquier desborde durante zooms y barridos
+  - height: 100vh obliga a pensar la escena como una sola pantalla fija
+
+  Cuando ScrollTrigger hace pin sobre este bloque, el usuario siente
+  que la pantalla se queda quieta y que lo que cambia es solo la escena.
+*/
+
+/*
   ------------------------------------------------------------
   BLOQUE 5. ESCENA ESCALABLE DE TRACKING
   ------------------------------------------------------------
@@ -152,6 +179,22 @@ body {
   will-change: transform;
   z-index: 1;
 }
+
+/*
+  ".tracking-stage" funciona como un grupo visual.
+
+  Dentro de el viven:
+  - el marco de la tele
+  - el bloque del video
+
+  Se usa position: absolute + inset: 0 para que esta escena ocupe
+  exactamente la pantalla pineada y pueda escalarse como una sola unidad.
+
+  La regla clave aqui es transform-origin: top left.
+  No es un detalle decorativo: hace que los calculos JS de zoom y
+  desplazamiento sean previsibles porque el origen del plano queda
+  fijado en la esquina superior izquierda.
+*/
 
 /*
   ------------------------------------------------------------
@@ -193,6 +236,19 @@ body {
 }
 
 /*
+  ".tracking-marco" es el contenedor tecnico de la imagen de la tele.
+
+  No se centra con flex ni con grid porque aqui necesitamos un control
+  muy directo de su geometria:
+  - top/left al 50%
+  - translate negativo para recentrarlo
+  - width calculado para comportarse como "cover"
+
+  Esta caja no solo contiene la imagen: tambien define el sistema
+  sobre el que luego se mide el hueco del video.
+*/
+
+/*
   ".tracking-bg" es la imagen real del asset de la tele.
 
   Aqui no repetimos ninguna logica complicada porque el trabajo
@@ -213,6 +269,15 @@ body {
   width: 100%;
   height: 100%;
 }
+
+/*
+  ".tracking-bg" es sencilla a proposito.
+
+  Aqui no hay position ni transform porque todo eso ya lo resuelve
+  ".tracking-marco". Esta clase solo asegura que la imagen rellene
+  por completo su contenedor sin introducir el comportamiento inline
+  por defecto de <img>.
+*/
 
 /*
   ------------------------------------------------------------
@@ -256,6 +321,17 @@ body {
   will-change: top, left, width, height;
   z-index: 2;
 }
+
+/*
+  ".bloque-video" no tiene una posicion visual fija escrita en CSS.
+
+  Se declara como absolute porque JavaScript le asigna top/left/width/height
+  exactos a partir del hueco medido del SVG.
+
+  Su papel en la jerarquia de capas es este:
+  - por encima de ".tracking-bg" para quedar visible sobre la tele
+  - por debajo de las barras y de la escena horizontal
+*/
 
 /*
   ------------------------------------------------------------
@@ -308,6 +384,16 @@ body {
 }
 
 /*
+  ".barras-negras" es un contenedor de capa completa.
+
+  No tiene display especial porque sus hijos estan posicionados
+  manualmente con absolute.
+
+  Su unico trabajo es ofrecer una superficie que cubra toda la escena
+  para poder apilar las seis columnas por encima del tracking.
+*/
+
+/*
   ".barra-negra" define el comportamiento comun de las seis columnas.
 
   Todas comparten las mismas reglas base:
@@ -331,6 +417,15 @@ body {
   transform-origin: left center;
   will-change: transform;
 }
+
+/*
+  Las clases ".barra-negra-1" a ".barra-negra-6" no anaden efectos.
+  Solo reparten cada columna en su franja horizontal correspondiente.
+
+  Este patron separa responsabilidades:
+  - ".barra-negra" define como es una barra
+  - ".barra-negra-N" define donde se coloca esa barra
+*/
 
 .barra-negra-1 {
   left: 0;
@@ -378,6 +473,16 @@ body {
 }
 
 /*
+  ".horizontal-stage" es la ultima gran capa de la secuencia.
+
+  Cubre toda la pantalla, igual que las barras, pero arranca invisible.
+  Solo cuando JS la activa empieza a verse el carril lateral.
+
+  Se mantiene en absolute porque no debe empujar el layout;
+  debe sustituir visualmente a lo anterior en el mismo encuadre.
+*/
+
+/*
   La pista es mas ancha que la ventana y arranca con un gran padding
   izquierdo. Eso deja todo el carril fuera del viewport al comienzo.
 
@@ -401,11 +506,34 @@ body {
   will-change: transform;
 }
 
+/*
+  ".horizontal-track" usa display: flex por una razon muy concreta:
+  necesitamos que las piezas laterales se coloquen en fila y conserven
+  su orden natural de lectura.
+
+  Reglas clave:
+  - position: absolute para mover toda la pista con transform
+  - display: flex para alinear assets en horizontal
+  - gap para separar visualmente las piezas
+  - padding lateral para que entren y salgan fuera del viewport
+*/
+
 .horizontal-item {
   position: relative;
   flex: 0 0 auto;
   height: 100%;
 }
+
+/*
+  ".horizontal-item" es la clase base de cada modulo del carril.
+
+  - position: relative prepara un contexto local por si sus hijos
+    necesitan apilarse en absolute, como ocurre con el ring
+  - flex: 0 0 auto impide que flexbox estire o encoja la pieza
+  - height: 100% hace que cada modulo herede toda la altura del track
+
+  Esta clase no decide que asset se ve. Solo define la caja comun.
+*/
 
 /*
   La primera pieza es panoramica y por eso su ancho depende
@@ -417,6 +545,14 @@ body {
 .horizontal-item-bar {
   width: calc(100vh * 3.5555555556);
 }
+
+/*
+  ".horizontal-item-bar" especializa la clase base para la panoramica.
+
+  Su ancho no se mide en % del track ni en px fijos:
+  se deriva de la altura del viewport para mantener una presencia
+  horizontal larga y consistente en pantallas distintas.
+*/
 
 /*
   La panoramica rellena completamente su caja.
@@ -433,6 +569,16 @@ body {
 }
 
 /*
+  ".horizontal-bar" es simplemente la imagen del asset lateral.
+
+  - display: block evita huecos de inline
+  - width/height: 100% hace que herede la caja del item
+  - object-fit: cover permite rellenar la caja sin deformacion
+
+  El recorte, si ocurre, es una decision visual controlada.
+*/
+
+/*
   La segunda pieza del carril esta dimensionada para ocupar
   una caja equivalente al viewport.
 
@@ -445,6 +591,18 @@ body {
   width: 100vw;
   overflow: hidden;
 }
+
+/*
+  ".horizontal-item-ring" es la caja contenedora del ring completo.
+
+  Se declara relative porque dentro se apilan tres capas absolutas:
+  - base del ring
+  - luz 1
+  - luz 2
+
+  width: 100vw hace que, cuando esta pieza llega al centro,
+  ya tenga escala de pantalla completa sin pasos extra.
+*/
 
 /*
   El ring base y las dos capas de luz ocupan exactamente
@@ -466,14 +624,40 @@ body {
   object-fit: cover;
 }
 
+/*
+  Estas tres clases comparten exactamente la misma caja:
+  ".horizontal-ring", ".Luz1" y ".Luz2".
+
+  position: absolute + inset: 0 significa:
+  - salir del flujo interno del ring
+  - pegarse a los cuatro bordes del contenedor padre
+  - ocupar la misma area exacta unas encima de otras
+
+  Es la base tecnica que permite hacer fades de luz sin mover
+  el asset principal.
+*/
+
 .horizontal-ring {
+  /*
+    Base del ring.
+    Va en el nivel inferior de esta pila local.
+  */
   z-index: 1;
 }
 
 .Luz1 {
+  /*
+    Primera capa de luz.
+    Se apila sobre la base para poder atenuarse por separado.
+  */
   z-index: 2;
 }
 
 .Luz2 {
+  /*
+    Segunda capa de luz.
+    Se coloca por encima de todo para que su apagado sea el ultimo
+    gesto visual de esta fase.
+  */
   z-index: 3;
 }

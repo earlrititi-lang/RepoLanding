@@ -3,7 +3,7 @@
   BLOQUE 1. REFERENCIAS A ELEMENTOS DEL DOM
   ------------------------------------------------------------
 
-  Necesitamos once piezas para montar el efecto:
+  Necesitamos once piezas para montar el efecto principal:
 
   1. pinSection
      Es la zona que ScrollTrigger dejara fija mientras el usuario
@@ -45,6 +45,7 @@
 
   11. ringLight2
       Es la segunda capa luminosa superpuesta sobre el ring.
+
 */
 const pinSection = document.querySelector(".escena__pin");
 const trackingStage = document.querySelector(".tracking-stage");

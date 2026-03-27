@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bandera ondulante en Three.js</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <!--
+    Este contenedor es el unico nodo que necesita el efecto.
+
+    El script busca [data-flag-stage], crea dentro un <canvas> de Three.js
+    y usa su tamano real para renderizar la escena. Si un alumno quiere mover
+    este efecto a otro proyecto, lo minimo que debe copiar es:
+
+    1. Un contenedor equivalente a este.
+    2. El CSS que le da tamano al contenedor.
+    3. Three.js, la textura y script.js.
+
+    Si en su proyecto no quieren fullscreen, basta con cambiar el tamano de
+    este div desde CSS. El resto del efecto sigue funcionando igual.
+  -->
+  <div class="fullscreen-stage" data-flag-stage aria-label="Escena de bandera 3D"></div>
+
+  <!--
+    Three.js se carga primero porque script.js depende de window.THREE.
+
+    flag-texture.js es un apoyo para abrir la demo por file:// sin errores de
+    CORS en WebGL. En un proyecto servido por HTTP normalmente bastaria con
+    usar image.png directamente.
+  -->
+  <script src="./vendor/three.min.js"></script>
+  <script src="./vendor/flag-texture.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

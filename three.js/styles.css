@@ -1,0 +1,88 @@
+:root {
+  color-scheme: dark;
+}
+
+/*
+  Reset minimo:
+  - box-sizing evita sorpresas con padding y ancho/alto.
+  - en una demo WebGL conviene partir de una base muy controlada.
+*/
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/*
+  html y body ocupan todo el viewport porque el canvas quiere un area real
+  sobre la que medir ancho y alto. overflow:hidden evita barras de scroll,
+  algo importante cuando el efecto debe leerse como una escena inmersiva.
+*/
+html,
+body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/*
+  El fondo azulado no forma parte de Three.js.
+  Se deja en CSS porque:
+  - es mas barato renderizarlo aqui que en WebGL,
+  - separa claramente "decoracion de pagina" de "escena 3D",
+  - y hace mas facil mover la bandera a otro proyecto.
+
+  Si alguien quiere reutilizar el efecto, puede conservar solo el canvas y
+  poner su propio fondo detras con una imagen, un color o un video.
+*/
+body {
+  background:
+    radial-gradient(circle at 22% 24%, rgba(232, 244, 255, 0.36), transparent 20%),
+    radial-gradient(circle at 72% 18%, rgba(182, 211, 248, 0.28), transparent 24%),
+    radial-gradient(circle at 55% 58%, rgba(111, 157, 214, 0.22), transparent 42%),
+    linear-gradient(180deg, #dce9f7 0%, #b7cde8 34%, #7ea3d0 68%, #5f87ba 100%);
+}
+
+/*
+  Este es el escenario que recibe el canvas.
+
+  position:fixed + inset:0 lo convierten en una capa fullscreen.
+  Si en otro proyecto se quiere incrustar el efecto en un bloque concreto,
+  esta clase es la que hay que adaptar:
+  - width / height fijas si va dentro de una card
+  - aspect-ratio si se quiere mantener proporcion
+  - position:relative si no debe cubrir toda la pagina
+*/
+.fullscreen-stage {
+  position: fixed;
+  inset: 0;
+}
+
+/*
+  Esta pseudo-capa anade atmosfera visual por delante del fondo.
+  No toca el canvas ni interfiere con el raton gracias a pointer-events:none.
+
+  Es opcional. Sirve para ensenar que un efecto 3D puede convivir con capas
+  CSS normales sin tener que meter todo dentro de WebGL.
+*/
+.fullscreen-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 28%),
+    radial-gradient(circle at 50% 50%, transparent 46%, rgba(34, 55, 86, 0.12) 100%);
+}
+
+/*
+  Three.js inserta un <canvas> dentro del contenedor.
+  Lo forzamos a ocupar el 100% para que el renderer y el DOM hablen el mismo
+  idioma visual: el canvas mide lo mismo que el stage.
+*/
+.fullscreen-stage canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
