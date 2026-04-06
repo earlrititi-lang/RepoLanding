@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pago completado</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="status-page">
+      <section class="status-card">
+        <p class="eyebrow success">Pago completado</p>
+        <h1>Stripe ha devuelto una sesi&oacute;n v&aacute;lida</h1>
+        <p class="muted">
+          Esta pantalla consulta al backend con el <code>session_id</code> para confirmar qu&eacute; devolvi&oacute;
+          Stripe.
+        </p>
+
+        <dl id="status-list" class="status-list">
+          <div>
+            <dt>Alumno</dt>
+            <dd id="student-name">Cargando...</dd>
+          </div>
+          <div>
+            <dt>Email</dt>
+            <dd id="student-email">Cargando...</dd>
+          </div>
+          <div>
+            <dt>Estado de la sesi&oacute;n</dt>
+            <dd id="session-status">Cargando...</dd>
+          </div>
+          <div>
+            <dt>Estado del pago</dt>
+            <dd id="payment-status">Cargando...</dd>
+          </div>
+        </dl>
+
+        <a class="link-button" href="/">Volver al inicio</a>
+      </section>
+    </main>
+
+    <script src="/success.js"></script>
+  </body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pasarela de pago con Stripe</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="layout">
+      <section class="hero">
+        <p class="eyebrow">Paso 1 · Checkout Sessions</p>
+        <h1>Pasarela de pago b&aacute;sica para alumnos</h1>
+        <p class="lead">
+          Este ejemplo usa Stripe Checkout, la opci&oacute;n m&aacute;s clara para ense&ntilde;ar un pago
+          puntual sin exponer datos sensibles de tarjeta en nuestro servidor.
+        </p>
+
+        <div class="course-card">
+          <div>
+            <p class="label">Producto</p>
+            <h2 id="course-title">Cargando curso...</h2>
+            <p id="course-description" class="muted"></p>
+          </div>
+
+          <div class="price-box">
+            <p class="label">Precio</p>
+            <strong id="course-price">--</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div>
+          <p class="eyebrow">Formulario previo</p>
+          <h2>Datos del alumno</h2>
+          <p class="muted">
+            Recogemos solo nombre y email para iniciar la sesi&oacute;n de Checkout y asociar el pago al
+            alumno.
+          </p>
+        </div>
+
+        <form id="checkout-form" class="form">
+          <label>
+            Nombre del alumno
+            <input id="student-name" type="text" placeholder="Ada Lovelace" required />
+          </label>
+
+          <label>
+            Email del alumno
+            <input id="student-email" type="email" placeholder="ada@ejemplo.com" required />
+          </label>
+
+          <button id="submit-button" type="submit">Ir a pagar con Stripe</button>
+        </form>
+
+        <p id="message" class="message" aria-live="polite"></p>
+      </section>
+    </main>
+
+    <script src="/script.js"></script>
+  </body>
+</html>

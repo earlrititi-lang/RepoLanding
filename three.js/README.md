@@ -1,6 +1,5 @@
 # Bandera ondulante en Three.js
 
-Esta carpeta esta preparada para usarse como ejemplo docente.
 
 ## Que hace este efecto
 
@@ -66,7 +65,7 @@ Por ejemplo:
 
 ## Parametros que mas interesa tocar
 
-### Tamano de la tela
+### Tamano de la tela y ajuste responsive
 
 En `script.js`:
 
@@ -77,6 +76,10 @@ var clothHeight = 5.55;
 
 Si la imagen es mas panoramica, subir el ancho.
 Si es mas vertical, subir la altura.
+
+La bandera ya no depende de un encuadre fijo. En `resize()` se calcula el
+tamano visible de la camara y se aplica un `coverScale` para que la malla
+cubra el viewport de forma responsive.
 
 ### Suavidad del movimiento
 
@@ -96,6 +99,7 @@ Dentro de `deformFlag()`:
 - `bellyWave` controla el gran pliegue principal.
 - `flutterWave` controla la vibracion rapida.
 - `tipFlick` controla el latigazo del borde libre.
+- `leftRelease`, `rightRelease` y `verticalRelease` endurecen los bordes.
 
 Si el efecto queda exagerado, bajar primero los multiplicadores de `zOffset`.
 
@@ -105,11 +109,44 @@ En `script.js`:
 
 ```js
 camera.position.set(0.45, 0.1, 11.6);
-root.position.set(-4.7, -0.08, 0);
 ```
 
 La camara cambia el encuadre general.
-`root.position` mueve toda la bandera dentro del plano.
+La posicion base de `root` ahora se calcula automaticamente en `resize()`.
+
+## Bordes rigidos
+
+El efecto ya no deja que toda la tela se comporte igual.
+
+- El borde izquierdo actua como anclaje.
+- El borde derecho sigue vivo, pero el extremo ya no se dobla tanto.
+- El borde superior e inferior estan amortiguados para que la silueta se vea
+  mas firme.
+
+Esto se resuelve con mascaras suaves dentro de `deformFlag()`, no con una sola
+onda global.
+
+## Sombra mas realista
+
+La sombra ya no es un rectangulo oscuro debajo de la bandera.
+
+Ahora se construye con dos capas:
+
+- una sombra ancha y difusa para el volumen general
+- una sombra de contacto mas compacta para anclar visualmente la tela
+
+Ambas usan una textura generada por canvas con degradado radial. Es una buena
+solucion docente porque:
+
+- se entiende facil
+- no necesita un suelo 3D receptor
+- y da un resultado mas natural que un plano uniforme
+
+Ademas, la sombra vive en un grupo separado pero ahora copia toda la rotacion
+de `root`. Eso permite ensenar dos ideas a la vez:
+
+- la sombra puede heredar el movimiento del paño
+- y aun asi seguir teniendo capas, escala y opacidad controladas aparte
 
 ## Por que hay dos formas de cargar la textura
 
@@ -122,9 +159,8 @@ Si la pagina se abre por `http://localhost` o por un dominio normal, se usa:
 Si se abre directamente por `file://`, muchos navegadores bloquean texturas en
 WebGL. Para evitarlo, `vendor/flag-texture.js` inyecta la imagen como base64.
 
-## Recomendacion para clase
+## Explicación
 
-Explicarlo en este orden:
 
 1. HTML: solo necesitamos un contenedor.
 2. CSS: ese contenedor necesita tamano.

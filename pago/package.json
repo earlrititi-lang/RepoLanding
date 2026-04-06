@@ -1,0 +1,13 @@
+{
+  "name": "pasarela-pago-stripe-basica",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Ejemplo didactico de una pasarela de pago basica con Stripe Checkout",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.0",
+    "stripe": "^19.3.0"
+  }
+}
