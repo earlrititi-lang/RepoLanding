@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Ejemplo completo de una web simple responsive con navbar hamburguesa, cards, secciones y formulario."
+    />
+    <title>Atlas Studio | Demo Responsive</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Space+Grotesk:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Saltar al contenido</a>
+
+    <header class="site-header" id="top">
+      <nav class="navbar" aria-label="Principal">
+        <a class="brand" href="#top">
+          <span class="brand-mark" aria-hidden="true">A</span>
+          <span class="brand-copy">
+            <strong>Atlas</strong>
+            <span>Studio</span>
+          </span>
+        </a>
+
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-expanded="false"
+          aria-controls="primary-menu"
+          aria-label="Abrir navegacion"
+        >
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+        </button>
+
+        <div class="nav-menu" id="primary-menu">
+          <a href="#inicio">Inicio</a>
+          <a href="#servicios">Servicios</a>
+          <a href="#proceso">Proceso</a>
+          <a href="#casos">Casos</a>
+          <a href="#faq">FAQ</a>
+          <a class="button button--nav" href="#contacto">Contacto</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="main-content">
+      <section class="section hero" id="inicio">
+        <div class="hero-copy">
+          <p class="eyebrow">Plantilla responsive completa</p>
+          <h1>Una web simple que cambia bien desde movil hasta escritorio.</h1>
+          <p class="lead">
+            Este ejemplo junta los bloques que suelen repetirse en una landing:
+            header fijo, menu hamburguesa, hero, tarjetas, secciones en grid,
+            FAQ, formulario y footer. La idea es que puedas copiarlo y usarlo
+            como base real.
+          </p>
+
+          <div class="hero-actions">
+            <a class="button" href="#servicios">Ver estructura</a>
+            <a class="button button--ghost" href="#contacto">Ir al cierre</a>
+          </div>
+
+          <ul class="hero-stats" aria-label="Metricas del ejemplo">
+            <li>
+              <strong>48rem</strong>
+              <span>menu hamburguesa hasta 768px</span>
+            </li>
+            <li>
+              <strong>62rem</strong>
+              <span>secciones en varias columnas</span>
+            </li>
+            <li>
+              <strong>100%</strong>
+              <span>layout fluido sin anchos rigidos</span>
+            </li>
+          </ul>
+        </div>
+
+        <aside class="hero-panel" aria-label="Resumen de la demo">
+          <article class="panel-card panel-card--highlight">
+            <p class="panel-kicker">Que incluye</p>
+            <h2>Checklist para una landing responsive.</h2>
+            <ul class="check-list">
+              <li>Navbar accesible con estado abierto y cerrado</li>
+              <li>Bloques que se apilan sin duplicar contenido</li>
+              <li>Tipografia y espacios con escalado progresivo</li>
+              <li>Componentes reutilizables para seguir creciendo</li>
+            </ul>
+          </article>
+
+          <article class="panel-card">
+            <p class="panel-kicker">Lectura del layout</p>
+            <div class="mini-grid">
+              <article>
+                <span>Movil</span>
+                <strong>1 columna</strong>
+              </article>
+              <article>
+                <span>Tablet</span>
+                <strong>bloques mixtos</strong>
+              </article>
+              <article>
+                <span>Desktop</span>
+                <strong>2 y 3 columnas</strong>
+              </article>
+              <article>
+                <span>JS</span>
+                <strong>menu y estados</strong>
+              </article>
+            </div>
+          </article>
+        </aside>
+      </section>
+
+      <section class="section logo-strip" aria-label="Tecnicas usadas">
+        <p class="strip-title">Tecnicas que veras en esta demo</p>
+        <ul class="logo-list">
+          <li>CSS Grid</li>
+          <li>Flexbox</li>
+          <li>Clamp</li>
+          <li>Media Queries</li>
+          <li>ARIA</li>
+          <li>Intersection Observer</li>
+        </ul>
+      </section>
+
+      <section class="section" id="servicios">
+        <div class="section-heading">
+          <p class="eyebrow">Servicios</p>
+          <h2>Bloques basicos que suelen entrar en una web simple.</h2>
+          <p>
+            Las tarjetas usan una rejilla flexible para que el mismo HTML sirva
+            en movil, tablet y escritorio sin cambiar la estructura.
+          </p>
+        </div>
+
+        <div class="card-grid">
+          <article class="info-card">
+            <div class="card-icon">01</div>
+            <h3>Hero adaptable</h3>
+            <p>
+              Un encabezado principal con texto, acciones y una tarjeta lateral
+              que se reorganiza al crecer el ancho disponible.
+            </p>
+          </article>
+
+          <article class="info-card">
+            <div class="card-icon">02</div>
+            <h3>Grid flexible</h3>
+            <p>
+              Tarjetas con <code>repeat(auto-fit, minmax(...))</code> para
+              mantener orden y respiracion sin media queries por cada tarjeta.
+            </p>
+          </article>
+
+          <article class="info-card">
+            <div class="card-icon">03</div>
+            <h3>Contenido legible</h3>
+            <p>
+              Titulares con <code>clamp()</code>, anchos maximos de lectura y
+              espaciados que no se rompen cuando la pantalla cambia.
+            </p>
+          </article>
+
+          <article class="info-card">
+            <div class="card-icon">04</div>
+            <h3>Formularios simples</h3>
+            <p>
+              Inputs y textarea con una sola columna en movil y dos columnas
+              cuando hay espacio suficiente.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section split-section" id="proceso">
+        <div class="section-heading section-heading--compact">
+          <p class="eyebrow">Proceso</p>
+          <h2>Una manera practica de construir responsive sin perder tiempo.</h2>
+        </div>
+
+        <div class="split-layout">
+          <article class="story-card">
+            <h3>Paso a paso</h3>
+            <ol class="step-list">
+              <li>
+                <strong>Empieza por una columna.</strong>
+                <p>
+                  Si la version estrecha funciona, luego es mucho mas facil
+                  repartir elementos en dos o tres columnas.
+                </p>
+              </li>
+              <li>
+                <strong>Haz fluidos los contenedores.</strong>
+                <p>
+                  Usa <code>min()</code>, <code>max-width</code> y
+                  <code>gap</code> generosos para que el layout respire sin
+                  depender de medidas fijas.
+                </p>
+              </li>
+              <li>
+                <strong>Escala solo donde haga falta.</strong>
+                <p>
+                  El menu cambia a hamburguesa a <code>48rem</code>, y el resto
+                  de secciones crecen a varias columnas a <code>62rem</code>.
+                </p>
+              </li>
+            </ol>
+          </article>
+
+          <article class="story-card story-card--accent">
+            <h3>Reglas rapidas para no romper el layout</h3>
+            <ul class="bullet-list">
+              <li>No fijes alturas grandes salvo en elementos decorativos.</li>
+              <li>Evita imagenes o textos obligados a un ancho exacto.</li>
+              <li>Deja que botones y tarjetas hagan wrap cuando convenga.</li>
+              <li>Usa <code>scroll-margin-top</code> si el header es sticky.</li>
+              <li>
+                Cierra el menu movil con <code>Escape</code>, clic fuera y al
+                navegar.
+              </li>
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="casos">
+        <div class="section-heading">
+          <p class="eyebrow">Casos</p>
+          <h2>Tres ejemplos de componentes que cambian bien segun el ancho.</h2>
+          <p>
+            Aqui se ve una combinacion de card ancha, tarjetas normales y datos
+            cortos para mostrar distintos ritmos visuales.
+          </p>
+        </div>
+
+        <div class="showcase-grid">
+          <article class="showcase-card showcase-card--wide">
+            <p class="panel-kicker">Caso 01</p>
+            <h3>Panel principal con informacion resumida</h3>
+            <p>
+              En escritorio ocupa mas espacio para crear jerarquia. En pantallas
+              estrechas vuelve a ocupar una sola columna automaticamente.
+            </p>
+            <ul class="metric-list">
+              <li>
+                <strong>+35%</strong>
+                <span>claridad de contenido</span>
+              </li>
+              <li>
+                <strong>3 bloques</strong>
+                <span>sin duplicar markup</span>
+              </li>
+            </ul>
+          </article>
+
+          <article class="showcase-card">
+            <p class="panel-kicker">Caso 02</p>
+            <h3>Tarjeta compacta</h3>
+            <p>
+              Ideal para servicios, testimonios o beneficios. Mantiene la misma
+              estructura y cambia solo el reparto del grid.
+            </p>
+          </article>
+
+          <article class="showcase-card">
+            <p class="panel-kicker">Caso 03</p>
+            <h3>Bloque corto de apoyo</h3>
+            <p>
+              Funciona como CTA, insight o microresumen. La clave es no meter
+              texto demasiado largo cuando la tarjeta es pequena.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="faq">
+        <div class="section-heading">
+          <p class="eyebrow">FAQ</p>
+          <h2>Preguntas rapidas para cerrar una pagina simple.</h2>
+        </div>
+
+        <div class="faq-grid">
+          <details class="faq-item" open>
+            <summary>Que breakpoint usa el navbar?</summary>
+            <p>
+              El cambio a hamburguesa se hace por debajo de
+              <code>48rem</code>, que son <code>768px</code> si el root
+              font-size sigue en <code>16px</code>.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Por que no hay anchos fijos grandes?</summary>
+            <p>
+              Porque los anchos fijos obligan a romper o a recortar. Esta demo
+              usa contenedores fluidos y columnas que pueden caer a una sola.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Que partes son faciles de reutilizar?</summary>
+            <p>
+              El <code>header</code>, el hero, la grid de tarjetas, el bloque
+              FAQ y el formulario final. Puedes borrar o duplicar secciones sin
+              tocar el sistema base.
+            </p>
+          </details>
+
+          <details class="faq-item">
+            <summary>Hace falta JS para todo lo demas?</summary>
+            <p>
+              No. El responsive principal lo hace CSS. El JS solo mejora el menu
+              movil, el enlace activo, el ano del footer y el formulario demo.
+            </p>
+          </details>
+        </div>
+      </section>
+
+      <section class="section contact-section" id="contacto">
+        <div class="contact-card">
+          <div class="contact-copy">
+            <p class="eyebrow">Contacto</p>
+            <h2>Un cierre simple con texto y formulario.</h2>
+            <p>
+              Este formulario no envia datos. Sirve para mostrar una estructura
+              comun de contacto y como se adapta al ancho disponible.
+            </p>
+
+            <ul class="contact-list">
+              <li>
+                <strong>Email</strong>
+                <span>hola@atlasstudio.dev</span>
+              </li>
+              <li>
+                <strong>Horario</strong>
+                <span>Lunes a viernes, 09:00 - 18:00</span>
+              </li>
+              <li>
+                <strong>Enfoque</strong>
+                <span>Landing pages, portfolios y micrositios.</span>
+              </li>
+            </ul>
+          </div>
+
+          <form class="contact-form">
+            <label>
+              <span>Nombre</span>
+              <input type="text" name="name" placeholder="Ada Lovelace" required />
+            </label>
+
+            <label>
+              <span>Email</span>
+              <input
+                type="email"
+                name="email"
+                placeholder="ada@ejemplo.com"
+                required
+              />
+            </label>
+
+            <label class="contact-form__full">
+              <span>Mensaje</span>
+              <textarea
+                name="message"
+                rows="5"
+                placeholder="Quiero usar esta estructura como base para mi landing..."
+                required
+              ></textarea>
+            </label>
+
+            <div class="contact-form__full form-actions">
+              <button class="button" type="submit">Enviar ejemplo</button>
+              <p class="form-note" role="status" aria-live="polite"></p>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>&copy; <span class="current-year"></span> Atlas Studio. Demo responsive.</p>
+      <a href="#top">Volver arriba</a>
+    </footer>
+  </body>
+</html>
