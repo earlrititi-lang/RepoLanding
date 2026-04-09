@@ -3,35 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta
+    name="description"
+    content="Demo actualizada de bandera ondulante con Three.js moderno y Vite."
+  >
   <title>Bandera ondulante en Three.js</title>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
   <!--
-    Este contenedor es el unico nodo que necesita el efecto.
+    Este contenedor es el unico nodo del DOM que necesita la escena.
 
-    El script busca [data-flag-stage], crea dentro un <canvas> de Three.js
-    y usa su tamano real para renderizar la escena. Si un alumno quiere mover
-    este efecto a otro proyecto, lo minimo que debe copiar es:
+    script.js busca [data-flag-stage], crea dentro un canvas WebGL y usa el
+    tamano real de este bloque para sincronizar renderer y camara.
 
-    1. Un contenedor equivalente a este.
-    2. El CSS que le da tamano al contenedor.
-    3. Three.js, la textura y script.js.
-
-    Si en su proyecto no quieren fullscreen, basta con cambiar el tamano de
-    este div desde CSS. El resto del efecto sigue funcionando igual.
+    Si el efecto se quiere mover a otra web, lo minimo que hay que copiar es:
+    1. un contenedor equivalente,
+    2. la hoja de estilos del contenedor,
+    3. script.js,
+    4. image.png.
   -->
-  <div class="fullscreen-stage" data-flag-stage aria-label="Escena de bandera 3D"></div>
+  <div
+    class="fullscreen-stage"
+    data-flag-stage
+    aria-label="Escena 3D de bandera ondulante"
+  ></div>
 
   <!--
-    Three.js se carga primero porque script.js depende de window.THREE.
-
-    flag-texture.js es un apoyo para abrir la demo por file:// sin errores de
-    CORS en WebGL. En un proyecto servido por HTTP normalmente bastaria con
-    usar image.png directamente.
+    La demo ya no depende de window.THREE ni de scripts clasicos.
+    Vite resuelve el import de Three.js desde script.js usando ES modules.
   -->
-  <script src="./vendor/three.min.js"></script>
-  <script src="./vendor/flag-texture.js"></script>
-  <script src="./script.js"></script>
+  <script type="module" src="./script.js"></script>
 </body>
 </html>
