@@ -35,7 +35,8 @@
      para simular el scroll lateral.
 
   8. horizontalBarItem
-     Es la primera pieza de la pista: scrollbarlateral.png.
+     Es la primera pieza de la pista: la caja donde scrollbarlateral.png
+     se renderiza como una superficie ondulada con Three.js.
 
   9. horizontalRingItem
      Es la segunda pieza: el ring que termina ocupando el viewport.
@@ -313,8 +314,8 @@ if (
 
     FASE 3:
     cuando la pantalla ya es completamente negra, aparece una pista
-    horizontal. Primero entra scrollbarlateral.png y despues la
-    composicion completa del ring.
+    horizontal. Primero entra la panoramica ondulada basada en
+    scrollbarlateral.png y despues la composicion completa del ring.
 
     FASE 4:
     con el ring ya inmovil y encajado en el viewport,
@@ -325,7 +326,7 @@ if (
 
     Conceptualmente la parte final se divide en cuatro micro-momentos:
     - arranque del carril fuera de pantalla
-    - cruce lateral de la panoramica
+    - cruce lateral de la panoramica ondulada
     - llegada final del ring al centro del viewport
     - apagado secuencial de las dos luces
   */
@@ -406,7 +407,7 @@ if (
       --------------------------------------------------------
 
       La pista se desplaza hacia la izquierda.
-      Primero entra scrollbarlateral.png y despues el conjunto del ring
+      Primero entra la panoramica ondulada y despues el conjunto del ring
       formado por su base y sus dos capas de luz.
 
       No centramos la pista completa, sino la segunda pieza.

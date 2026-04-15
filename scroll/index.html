@@ -270,15 +270,33 @@
               <!--
                 Primera pieza del carril lateral.
 
-                Es una panoramica larga que entra antes que el ring para
-                que la fase horizontal no arranque de golpe con el asset
-                final, sino con un recorrido previo que prepare la entrada.
+                Antes era una imagen plana.
+                Ahora esta misma panoramica se convierte en una superficie
+                ondulada con Three.js usando scrollbarlateral.png como
+                textura, siguiendo la misma logica que vive en la carpeta
+                hermana "three.js".
+
+                La caja interior tiene dos capas:
+                1. una imagen fallback por si el modulo no ha cargado aun
+                2. el canvas WebGL que Three.js insertara dentro
+
+                Asi mantenemos la misma lectura visual del carril lateral,
+                pero la primera pieza ya no entra "muerta", sino con
+                deformacion y luz propia.
               -->
-              <img
-                class="horizontal-bar"
-                src="./assets/scrollbarlateral.png"
-                alt=""
-              />
+              <div
+                class="horizontal-bar-wave"
+                data-wave-scrollbar-stage
+                data-wave-texture="./assets/scrollbarlateral.png"
+                data-wave-aspect-ratio="3.5555555556"
+                aria-label="Panoramica lateral con efecto ondulado en Three.js"
+              >
+                <img
+                  class="horizontal-bar-fallback"
+                  src="./assets/scrollbarlateral.png"
+                  alt=""
+                />
+              </div>
             </figure>
             <figure class="horizontal-item horizontal-item-ring">
               <!--
@@ -342,5 +360,6 @@
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/gsap.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12/dist/ScrollTrigger.min.js"></script>
     <script src="./script.js"></script>
+    <script src="./scrollbar-wave.bundle.js"></script>
   </body>
 </html>

@@ -557,25 +557,87 @@ body {
 /*
   La panoramica rellena completamente su caja.
 
-  object-fit: cover mantiene el asset sin deformarlo y permite
-  que, si la proporcion del archivo no coincide exactamente con
-  la de su caja visible, solo se recorten los sobrantes laterales.
+  Ya no es un <img> plano.
+  Ahora esta caja aloja:
+  - una imagen fallback
+  - y un canvas WebGL ondulado generado con Three.js
+
+  Se deja un fondo propio para suavizar la carga inicial y para que
+  la escena no parta de negro puro mientras llega la textura.
 */
-.horizontal-bar {
+.horizontal-bar-wave {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 20% 35%, rgba(255, 255, 255, 0.14), transparent 24%),
+    radial-gradient(circle at 78% 42%, rgba(135, 176, 226, 0.12), transparent 28%),
+    linear-gradient(180deg, #0b1622 0%, #07111a 100%);
+  isolation: isolate;
+}
+
+/*
+  ".horizontal-bar-fallback" mantiene visible la panoramica estatica
+  mientras el modulo termina de montar el canvas.
+
+  Cuando Three.js ya esta listo, el propio script marca la caja
+  con data-wave-ready="true" y esta imagen se desvanece.
+*/
+.horizontal-bar-fallback {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: opacity 0.35s ease;
+}
+
+.horizontal-bar-wave[data-wave-ready="true"] .horizontal-bar-fallback {
+  opacity: 0;
 }
 
 /*
-  ".horizontal-bar" es simplemente la imagen del asset lateral.
+  El canvas se superpone a la misma caja del fallback.
 
-  - display: block evita huecos de inline
-  - width/height: 100% hace que herede la caja del item
-  - object-fit: cover permite rellenar la caja sin deformacion
+  pointer-events: none evita que esta capa interfiera con la escena
+  pineada o con posibles futuras interacciones.
+*/
+.horizontal-bar-wave canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
 
-  El recorte, si ocurre, es una decision visual controlada.
+/*
+  Esta pelicula frontal refuerza el acabado sin cargar mas geometria
+  en WebGL. Es una capa puramente CSS por delante del canvas.
+*/
+.horizontal-bar-wave::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 22%),
+    linear-gradient(
+      90deg,
+      rgba(4, 10, 16, 0.08),
+      transparent 14%,
+      transparent 86%,
+      rgba(4, 10, 16, 0.08)
+    );
+}
+
+/*
+  Si el modulo fallase, la imagen fallback seguiria ocupando el mismo
+  espacio y la timeline horizontal no se descompondria.
 */
 
 /*
